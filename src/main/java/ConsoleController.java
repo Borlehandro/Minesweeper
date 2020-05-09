@@ -5,7 +5,10 @@ import exceptions.NoResourceInitException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.TreeSet;
 
@@ -102,6 +105,7 @@ public class ConsoleController {
                                     System.out.println("Checked.");
                                 } else {
                                     failed = true;
+                                    showField(field);
                                     break run;
                                 }
                             }
@@ -123,28 +127,11 @@ public class ConsoleController {
                         return;
                     }
                     case HELP -> System.out.println(CommandParser.GAME_INFO);
+                    default -> System.out.println("Unknown command.");
                 }
             }
 
-            System.out.println("Marks : " + field.getMarks() + "/" + field.getMarksLimit());
-
-            char[][] cells = field.getField();
-
-            System.out.print("  ");
-            for (int j = 0; j < size; ++j) {
-                System.out.print("|" + j);
-            }
-            System.out.println("|");
-
-            for (int i = 0; i < size; ++i) {
-                System.out.print("|" + i + "|");
-                for (int j = 0; j < size; ++j) {
-                    System.out.print(cells[i][j] + " ");
-                }
-                System.out.println("\b|");
-            }
-
-            System.out.println("--------------------");
+            showField(field);
 
             if (field.isCompleted())
                 break;
@@ -157,7 +144,7 @@ public class ConsoleController {
 
             // TODO Read from properties
 
-            Date duration = new Date(System.currentTimeMillis() - start);
+            LocalTime duration = LocalTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis() - start), ZoneOffset.UTC);
 
             TreeSet<ScoreItem> scoreTable = Parser.parse();
 
@@ -176,5 +163,27 @@ public class ConsoleController {
 
             Writer.write(scoreTable);
         }
+    }
+
+    private void showField(Field field) {
+        System.out.println("Marks : " + field.getMarks() + "/" + field.getMarksLimit());
+
+        char[][] cells = field.getField();
+
+        System.out.print("  ");
+        for (int j = 0; j < cells.length; ++j) {
+            System.out.print("|" + j);
+        }
+        System.out.println("|");
+
+        for (int i = 0; i < cells.length; ++i) {
+            System.out.print("|" + i + "|");
+            for (int j = 0; j < cells.length; ++j) {
+                System.out.print(cells[i][j] + " ");
+            }
+            System.out.println("\b|");
+        }
+
+        System.out.println("--------------------");
     }
 }

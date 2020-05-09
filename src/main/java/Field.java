@@ -118,6 +118,16 @@ public class Field {
 
             return true;
         } else
+            for(int i = 0; i < cells.length; ++i )
+                for(int j = 0; j < cells.length; ++j)
+                    if(!(cells[i][j].isMarked() && cells[i][j].getValue()==-1)) {
+                        if (cells[i][j].getValue() == -1)
+                            field[i][j] = '*';
+                        else if(cells[i][j].isMarked())
+                            field[i][j] = 'w';
+                        else
+                            field[i][j] = (char) (cells[i][j].getValue() + '0');
+                    }
             return false;
     }
 
@@ -157,6 +167,10 @@ public class Field {
 
     public int getMarksLimit() {
         return marksLimit;
+    }
+
+    public int getSize() {
+        return cells.length;
     }
 
 }

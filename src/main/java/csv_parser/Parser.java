@@ -5,6 +5,7 @@ import exceptions.NoResourceInitException;
 import java.io.*;
 import java.text.ParseException;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -22,16 +23,11 @@ public class Parser extends InitializableFilesHandler{
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(scoreTable)))) {
 
             return reader.lines().map(s -> {
-                try {
-                    String[] columns = s.split(",");
+                String[] columns = s.split(",");
 
-                    return new ScoreItem(columns[0], LocalDateTime.parse(columns[1], ScoreItem.noteDateFormatter),
-                            ScoreItem.timeFormatter.parse(columns[2]));
+                return new ScoreItem(columns[0], LocalDateTime.parse(columns[1], ScoreItem.noteDateFormatter),
+                        LocalTime.parse(columns[2], ScoreItem.timeFormatter));
 
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                    return null;
-                }
             }).collect(Collectors.toCollection(TreeSet::new));
 
         } catch (IOException e) {
