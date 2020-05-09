@@ -1,9 +1,8 @@
-package csv_parser;
+package score;
 
 import exceptions.NoResourceInitException;
 
 import java.io.*;
-import java.util.Properties;
 import java.util.Set;
 
 public class Writer extends InitializableFilesHandler{

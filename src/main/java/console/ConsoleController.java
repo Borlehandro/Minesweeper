@@ -1,6 +1,9 @@
-import csv_parser.Parser;
-import csv_parser.ScoreItem;
-import csv_parser.Writer;
+package console;
+
+import model.Field;
+import score.Parser;
+import score.ScoreItem;
+import score.Writer;
 import exceptions.NoResourceInitException;
 
 import java.io.BufferedReader;
@@ -9,7 +12,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.Date;
 import java.util.TreeSet;
 
 public class ConsoleController {

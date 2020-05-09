@@ -1,12 +1,11 @@
-import csv_parser.Parser;
-import csv_parser.ScoreItem;
-import csv_parser.Writer;
+import score.Parser;
+import score.ScoreItem;
+import score.Writer;
 import exceptions.NoResourceInitException;
 import org.junit.Test;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
 

@@ -1,5 +1,7 @@
-import csv_parser.Parser;
-import csv_parser.Writer;
+import console.CommandParser;
+import console.ConsoleController;
+import score.Parser;
+import score.Writer;
 
 import java.io.BufferedReader;
 import java.io.IOException;

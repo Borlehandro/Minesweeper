@@ -1,3 +1,5 @@
+package console;
+
 public enum Command {
 
     UNKNOWN,

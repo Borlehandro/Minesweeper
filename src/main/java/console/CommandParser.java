@@ -1,3 +1,5 @@
+package console;
+
 public class CommandParser {
 
     public static final String CONSOLE_COMMANDS_INFO = "Available commands: \n"

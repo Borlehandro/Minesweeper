@@ -1,9 +1,8 @@
-package csv_parser;
+package score;
 
 import exceptions.NoResourceInitException;
 
 import java.io.*;
-import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.TreeSet;

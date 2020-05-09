@@ -1,4 +1,4 @@
-package csv_parser;
+package score;
 
 import java.time.LocalDateTime;
 
