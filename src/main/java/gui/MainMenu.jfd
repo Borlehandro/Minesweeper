@@ -1,0 +1,44 @@
+JFDML JFormDesigner: "7.0.1.0.272" Java: "11.0.6" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class com.intellij.uiDesigner.core.GridLayoutManager ) {
+			"$columnCount": 9
+			"$rowCount": 6
+			"hGap": 5
+		} ) {
+			name: "this"
+			"title": "Minesweeper"
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "button4"
+				"text": "New Game"
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "newGameButtonActionPerformed", true ) )
+			}, new FormLayoutConstraints( class com.intellij.uiDesigner.core.GridConstraints ) {
+				"column": 4
+				"row": 3
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "button2"
+				"text": "High Scores"
+				"foreground": new java.awt.Color( 153, 153, 153, 255 )
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "scoreButtonActionPerformed", true ) )
+			}, new FormLayoutConstraints( class com.intellij.uiDesigner.core.GridConstraints ) {
+				"column": 4
+				"row": 4
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "button3"
+				"text": "About"
+				"foreground": new java.awt.Color( 102, 102, 102, 255 )
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "aboutButtonActionPerformed", true ) )
+			}, new FormLayoutConstraints( class com.intellij.uiDesigner.core.GridConstraints ) {
+				"column": 4
+				"row": 5
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 0, 0 )
+			"size": new java.awt.Dimension( 400, 300 )
+		} )
+	}
+}

@@ -1,5 +1,3 @@
-import exceptions.NoResourceInitException;
-
 import java.io.IOException;
 
 public class Main {
