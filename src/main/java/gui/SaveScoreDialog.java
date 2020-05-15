@@ -41,11 +41,7 @@ public class SaveScoreDialog extends JDialog {
         System.err.println("TEST");
         System.err.println(nameField.getText());
         if (!nameField.getText().isEmpty()) {
-            Parser.init();
-            TreeSet<ScoreItem> scoreTable = Parser.parse();
-            scoreTable.add(new ScoreItem(this.nameField.getText(), LocalDateTime.now(), gameTime));
-            Writer.init();
-            Writer.write(scoreTable);
+            new ScoreManager().add(this.nameField.getText(), gameTime);
             dispose();
         }
     }

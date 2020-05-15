@@ -5,9 +5,9 @@ import exceptions.NoResourceInitException;
 import java.io.*;
 import java.util.Set;
 
-public class Writer extends InitializableFilesHandler{
+public class Writer {
 
-    public static void write(Set<ScoreItem> table) throws NoResourceInitException {
+    static void write(String scoreTable, Set<ScoreItem> table) throws NoResourceInitException {
 
         if(scoreTable==null)
             throw new NoResourceInitException("Score table has not initialized");

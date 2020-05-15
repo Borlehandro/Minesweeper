@@ -18,10 +18,6 @@ public class GameController {
 
     public void run() throws IOException {
 
-        // Initialization for work with score tables
-        Parser.init();
-        Writer.init();
-
         System.out.println("Welcome to Minesweeper!\n" +
                 "Choose console or ui game mode or type \"help\" to get more information.");
 

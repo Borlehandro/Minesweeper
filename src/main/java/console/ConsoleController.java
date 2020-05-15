@@ -3,6 +3,7 @@ package console;
 import model.Field;
 import score.Parser;
 import score.ScoreItem;
+import score.ScoreManager;
 import score.Writer;
 import exceptions.NoResourceInitException;
 
@@ -17,14 +18,18 @@ import java.util.TreeSet;
 public class ConsoleController {
 
     private final BufferedReader reader;
+    private final ScoreManager scoreManager;
 
-    public ConsoleController(BufferedReader reader) {
+    public ConsoleController(BufferedReader reader) throws IOException {
         this.reader = reader;
+        scoreManager = new ScoreManager();
     }
 
     public void start() throws IOException {
 
         System.out.println("Welcome to console mode! Type \"help\" to get more information.");
+
+
 
         String s;
         while ((s = reader.readLine()) != null) {
@@ -58,7 +63,7 @@ public class ConsoleController {
 
                     try {
 
-                        TreeSet<ScoreItem> scoreTable = Parser.parse();
+                        TreeSet<ScoreItem> scoreTable = scoreManager.getScoreTable();
 
                         if (scoreTable != null && !scoreTable.isEmpty()) {
                             System.out.println("Score table.\n");
@@ -148,22 +153,20 @@ public class ConsoleController {
 
             LocalTime duration = LocalTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis() - start), ZoneOffset.UTC);
 
-            TreeSet<ScoreItem> scoreTable = Parser.parse();
-
             System.out.println("You win!");
             System.out.println("Your time is " + ScoreItem.timeFormatter.format(duration));
 
-            if (scoreTable != null && !scoreTable.isEmpty())
-                System.out.println(scoreTable.first().getTime().compareTo(duration) <= 0 ?
-                        "The best time is " + ScoreItem.timeFormatter.format(scoreTable.first().getTime())
+            ScoreItem best = scoreManager.getBest();
+
+            if (best!=null)
+                System.out.println(best.getTime().compareTo(duration) <= 0 ?
+                        "The best time is " + ScoreItem.timeFormatter.format(best.getTime())
                         : "It's the best time!");
 
             System.out.print("Enter your name: ");
             String name = reader.readLine();
 
-            scoreTable.add(new ScoreItem(name, LocalDateTime.now(), duration));
-
-            Writer.write(scoreTable);
+            scoreManager.add(name, duration);
         }
     }
 

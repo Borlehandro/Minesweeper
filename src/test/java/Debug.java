@@ -20,16 +20,16 @@ public class Debug {
     @Test
     public void scoreTest() throws NoResourceInitException {
 
-        TreeSet<ScoreItem> scoreTable = Parser.parse();
-        scoreTable.forEach((item) -> System.out.println(item.getTime()));
-
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeZone(TimeZone.getTimeZone("PST"));
-        calendar.setTimeInMillis(10);
-        System.err.println(calendar.getTimeZone());
-
-        // scoreTable.add(new ScoreItem("Test", LocalDateTime.now(), calendar.getTime()));
-        Writer.write(scoreTable);
+//        TreeSet<ScoreItem> scoreTable = Parser.parse();
+//        scoreTable.forEach((item) -> System.out.println(item.getTime()));
+//
+//        Calendar calendar = Calendar.getInstance();
+//        calendar.setTimeZone(TimeZone.getTimeZone("PST"));
+//        calendar.setTimeInMillis(10);
+//        System.err.println(calendar.getTimeZone());
+//
+//        // scoreTable.add(new ScoreItem("Test", LocalDateTime.now(), calendar.getTime()));
+//        Writer.write(scoreTable);
 
     }
 

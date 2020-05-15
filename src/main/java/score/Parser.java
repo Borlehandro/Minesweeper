@@ -8,13 +8,13 @@ import java.time.LocalTime;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-public class Parser extends InitializableFilesHandler{
+public class Parser {
 
     /**
      * Parse .csv file with score table.
      * @return Sorted set of ScoreItems.
      */
-    public static TreeSet<ScoreItem> parse() throws NoResourceInitException {
+    static TreeSet<ScoreItem> parse(String scoreTable) throws NoResourceInitException {
 
         if (scoreTable==null)
             throw new NoResourceInitException("Score table has not been initialized");
