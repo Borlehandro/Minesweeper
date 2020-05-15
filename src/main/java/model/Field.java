@@ -24,6 +24,10 @@ public class Field {
         generate(size, numberMines);
     }
 
+    public Cell[][] getCells() {
+        return cells;
+    }
+
     private void generate(int size, int numberMines) {
         Random random = new Random(System.currentTimeMillis());
 
