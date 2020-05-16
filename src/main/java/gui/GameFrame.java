@@ -1,8 +1,7 @@
 package gui;
 
-import model.Cell;
+import model.ExternalCell;
 import model.Field;
-import model.Pair;
 import score.ScoreItem;
 
 import javax.swing.*;
@@ -11,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.time.*;
+import java.util.Arrays;
 
 public class GameFrame extends JFrame {
     private long gameTimeMillis;
@@ -75,7 +75,7 @@ public class GameFrame extends JFrame {
 
             boolean success = true;
 
-            char[][] cells = field.getField();
+            ExternalCell[][] cells = field.getExternalCells();
             System.err.println("REPAINT!");
 
             // Debug
@@ -109,20 +109,13 @@ public class GameFrame extends JFrame {
                         }
 
                         g.setColor(switch (cells[i][j]) {
-                            case '?' -> {
+                            case UNKNOWN -> {
                                 if (lastPositionY >= i * CELL_SIZE + SPACING && lastPositionY <= CELL_SIZE * (i + 1) - SPACING
                                         && lastPositionX >= j * CELL_SIZE + SPACING && lastPositionX <= CELL_SIZE * (j + 1) - SPACING) {
                                     yield Color.red;
-                                } else yield Color.darkGray;
+                                } else yield ExternalCell.UNKNOWN.getImage();
                             }
-                            case '0' -> Color.GREEN;
-                            case '1' -> Color.yellow;
-                            case '2' -> Color.cyan;
-                            case '3' -> Color.blue;
-                            case '4' -> Color.ORANGE;
-                            case '5' -> Color.magenta;
-                            case '*' -> Color.black;
-                            default -> Color.darkGray;
+                            default -> cells[i][j].getImage();
                         });
 
                         g.fillRect(j * CELL_SIZE + SPACING, i * CELL_SIZE + SPACING,

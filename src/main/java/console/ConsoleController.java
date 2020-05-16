@@ -1,19 +1,20 @@
 package console;
 
+import model.ExternalCell;
 import model.Field;
-import score.Parser;
 import score.ScoreItem;
 import score.ScoreManager;
-import score.Writer;
 import exceptions.NoResourceInitException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ConsoleController {
 
@@ -173,7 +174,7 @@ public class ConsoleController {
     private void showField(Field field) {
         System.out.println("Marks : " + field.getMarks() + "/" + field.getMarksLimit());
 
-        char[][] cells = field.getField();
+        Character[][] cells = Arrays.stream(field.getExternalCells()).map(item -> Arrays.stream(item).map(ExternalCell::getSymbol).toArray(Character[]::new)).toArray(Character[][]::new);
 
         System.out.print("  ");
         for (int j = 0; j < cells.length; ++j) {

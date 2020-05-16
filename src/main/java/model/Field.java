@@ -6,16 +6,16 @@ import java.util.Random;
 
 public class Field {
 
-    private final Cell[][] cells;
-    private final char[][] field;
+    private final InternalCell[][] internalCells;
+    private final ExternalCell[][] externalCells;
     private int marks;
     private final int marksLimit;
     private int openedCells;
     private boolean completed;
 
     public Field(int size, int numberMines) {
-        this.cells = new Cell[size][size];
-        this.field = new char[size][size];
+        this.internalCells = new InternalCell[size][size];
+        this.externalCells = new ExternalCell[size][size];
         this.marksLimit = numberMines;
         this.marks = 0;
         this.openedCells = 0;
@@ -24,8 +24,8 @@ public class Field {
         generate(size, numberMines);
     }
 
-    public Cell[][] getCells() {
-        return cells;
+    public InternalCell[][] getInternalCells() {
+        return internalCells;
     }
 
     private void generate(int size, int numberMines) {
@@ -34,35 +34,35 @@ public class Field {
         // TODO FIX FOLLOW CODE.
         for (int i = 0; i < size; ++i) {
             for (int j = 0; j < size; ++j) {
-                cells[i][j] = new Cell(0);
-                field[i][j] = '?';
+                internalCells[i][j] = new InternalCell(0);
+                externalCells[i][j] = ExternalCell.UNKNOWN;
             }
         }
 
         for (int i = 0; i < numberMines; ++i) {
             int x = random.nextInt(size - 1);
             int y = random.nextInt(size - 1);
-            if (cells[x][y] != null && cells[x][y].getValue() == -1) {
+            if (internalCells[x][y] != null && internalCells[x][y].getValue() == -1) {
                 i--;
             } else {
-                cells[x][y].setValue(-1);
+                internalCells[x][y].setValue(-1);
                 for (Pair<Integer> c : getNeighbours(x, y)) {
-                    cells[c.x][c.y].setValue(cells[c.x][c.y].getValue() == -1 ? -1 : 1 + cells[c.x][c.y].getValue());
+                    internalCells[c.x][c.y].setValue(internalCells[c.x][c.y].getValue() == -1 ? -1 : 1 + internalCells[c.x][c.y].getValue());
                 }
             }
 
         }
     }
 
-    public char[][] getField() {
-        return field;
+    public ExternalCell[][] getExternalCells() {
+        return externalCells;
     }
 
     public boolean check(int x, int y) {
 
         System.err.println("Check " + x + " " + y);
 
-        if (cells[x][y].getValue() != 0)
+        if (internalCells[x][y].getValue() != 0)
             return open(x, y);
         else {
             cascadeOpen(x, y);
@@ -74,17 +74,17 @@ public class Field {
 
         System.err.println("Flag " + x + " " + y);
 
-        if (cells[x][y].isMarked()) {
-            cells[x][y].unmark();
-            field[x][y] = '?';
+        if (internalCells[x][y].isMarked()) {
+            internalCells[x][y].unmark();
+            externalCells[x][y] = ExternalCell.UNKNOWN;
             marks--;
             return true;
-        } else if (marks < marksLimit && cells[x][y].getStatus() != Cell.Status.OPENED) {
-            cells[x][y].mark();
-            field[x][y] = '!';
+        } else if (marks < marksLimit && !internalCells[x][y].isOpened()) {
+            internalCells[x][y].mark();
+            externalCells[x][y] = ExternalCell.MARK;
             marks++;
             return true;
-        } else return cells[x][y].getStatus() == Cell.Status.OPENED;
+        } else return internalCells[x][y].isOpened();
 
     }
 
@@ -95,10 +95,10 @@ public class Field {
 
         for (Pair<Integer> c : getNeighbours(x, y)) {
 
-            if (cells[c.x][c.y].getValue() != -1) {
-                if (cells[c.x][c.y].getValue() != 0) {
+            if (internalCells[c.x][c.y].getValue() != -1) {
+                if (internalCells[c.x][c.y].getValue() != 0) {
                     open(c.x, c.y);
-                } else if (cells[c.x][c.y].getStatus() != Cell.Status.OPENED)
+                } else if (!internalCells[c.x][c.y].isOpened())
                     cascadeOpen(c.x, c.y);
             }
         }
@@ -106,33 +106,33 @@ public class Field {
 
     private boolean open(int x, int y) {
 
-        if (cells[x][y].getValue() != -1) {
-            if (cells[x][y].getStatus() != Cell.Status.OPENED) {
-                if (cells[x][y].isMarked()) {
-                    cells[x][y].unmark();
+        if (internalCells[x][y].getValue() != -1) {
+            if (!internalCells[x][y].isOpened()) {
+                if (internalCells[x][y].isMarked()) {
+                    internalCells[x][y].unmark();
                     marks--;
                 }
-                cells[x][y].setStatus(Cell.Status.OPENED);
-                field[x][y] = (char) (cells[x][y].getValue() + '0');
+                internalCells[x][y].open();
+                externalCells[x][y] = ExternalCell.fromNumber(internalCells[x][y].getValue());
                 openedCells++;
 
                 System.err.println(openedCells);
 
-                if (openedCells == (cells.length * cells.length) - marksLimit)
+                if (openedCells == (internalCells.length * internalCells.length) - marksLimit)
                     completed = true;
             }
 
             return true;
         } else
-            for(int i = 0; i < cells.length; ++i )
-                for(int j = 0; j < cells.length; ++j)
-                    if(!(cells[i][j].isMarked() && cells[i][j].getValue()==-1)) {
-                        if (cells[i][j].getValue() == -1)
-                            field[i][j] = '*';
-                        else if(cells[i][j].isMarked())
-                            field[i][j] = 'w';
+            for(int i = 0; i < internalCells.length; ++i )
+                for(int j = 0; j < internalCells.length; ++j)
+                    if(!(internalCells[i][j].isMarked() && internalCells[i][j].getValue()==-1)) {
+                        if (internalCells[i][j].getValue() == -1)
+                            externalCells[i][j] = ExternalCell.MINE;
+                        else if(internalCells[i][j].isMarked())
+                            externalCells[i][j] = ExternalCell.WRONG_MARK;
                         else
-                            field[i][j] = (char) (cells[i][j].getValue() + '0');
+                            externalCells[i][j] = ExternalCell.fromNumber(internalCells[i][j].getValue());
                     }
             return false;
     }
@@ -145,18 +145,18 @@ public class Field {
             neighbours.add(new Pair<>(x - 1, y));
             if (y - 1 >= 0)
                 neighbours.add(new Pair<>(x - 1, y - 1));
-            if (y + 1 < cells.length)
+            if (y + 1 < internalCells.length)
                 neighbours.add(new Pair<>(x - 1, y + 1));
         }
         if (y - 1 >= 0)
             neighbours.add(new Pair<>(x, y - 1));
-        if (y + 1 < cells.length)
+        if (y + 1 < internalCells.length)
             neighbours.add(new Pair<>(x, y + 1));
-        if (x + 1 < cells.length) {
+        if (x + 1 < internalCells.length) {
             neighbours.add(new Pair<>(x + 1, y));
             if (y - 1 >= 0)
                 neighbours.add(new Pair<>(x + 1, y - 1));
-            if (y + 1 < cells.length)
+            if (y + 1 < internalCells.length)
                 neighbours.add(new Pair<>(x + 1, y + 1));
         }
 
@@ -176,7 +176,7 @@ public class Field {
     }
 
     public int getSize() {
-        return cells.length;
+        return internalCells.length;
     }
 
 }
