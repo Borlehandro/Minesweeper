@@ -1,6 +1,9 @@
 package model;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.io.*;
+import java.util.Properties;
 
 public enum ExternalCell {
 
@@ -20,11 +23,22 @@ public enum ExternalCell {
     WRONG_MARK('w', Color.red);
 
     char symbol;
-    Color image;
+    Color color;
+    Image image;
 
-    ExternalCell(char s, Color i) {
+    ExternalCell(char s, Color с) {
         symbol = s;
-        image = i;
+        color = с;
+        try {
+            Properties properties = new Properties();
+            // Todo change path for *.jar
+            properties.load(new FileInputStream("src\\main\\resources\\config.properties"));
+            if(properties.getProperty(this.name())!=null)
+                image = ImageIO.read(new File(properties.getProperty(this.name())));
+            else image = null;
+        } catch (IOException e) {
+            image = null;
+        }
     }
 
     public static ExternalCell fromNumber(int number) {
@@ -42,11 +56,15 @@ public enum ExternalCell {
         };
     }
 
-    public char getSymbol(){
+    public char getSymbol() {
         return symbol;
     }
 
-    public Color getImage() {
+    public Color getColor() {
+        return color;
+    }
+
+    public Image getImage() {
         return image;
     }
 }

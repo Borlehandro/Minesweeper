@@ -10,7 +10,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.time.*;
-import java.util.Arrays;
 
 public class GameFrame extends JFrame {
     private long gameTimeMillis;
@@ -20,6 +19,7 @@ public class GameFrame extends JFrame {
     private JPanel gamePanel;
     private JPanel fieldPanel;
     private JLabel timeLabel;
+    private JLabel marksLabel;
 
     public GameFrame(int size, int mines) {
         $$$setupUI$$$();
@@ -29,6 +29,7 @@ public class GameFrame extends JFrame {
         this.setContentPane(gamePanel);
         fieldPanel.addMouseMotionListener(new FieldMotionListener());
         fieldPanel.addMouseListener(new CellClickListener());
+        marksLabel.setText(0 + "/" + field.getMarksLimit());
     }
 
     /**
@@ -41,11 +42,14 @@ public class GameFrame extends JFrame {
     private void $$$setupUI$$$() {
         createUIComponents();
         gamePanel = new JPanel();
-        gamePanel.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
+        gamePanel.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(2, 2, new Insets(0, 0, 0, 0), -1, -1));
         timeLabel = new JLabel();
         timeLabel.setText("Time");
         gamePanel.add(timeLabel, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        gamePanel.add(fieldPanel, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        gamePanel.add(fieldPanel, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 2, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        marksLabel = new JLabel();
+        marksLabel.setText("Marks");
+        gamePanel.add(marksLabel, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**
@@ -67,13 +71,16 @@ public class GameFrame extends JFrame {
         int lastClickX = -1;
         int lastClickY = -1;
 
+        int lastButtonClicked = MouseEvent.NOBUTTON;
+
+        boolean success = true;
+
         private static final int SPACING = 5;
         private static final int CELL_SIZE = 50;
+        private static final int FONT_SIZE = 10;
 
         @Override
         protected void paintComponent(Graphics g) {
-
-            boolean success = true;
 
             ExternalCell[][] cells = field.getExternalCells();
             System.err.println("REPAINT!");
@@ -96,31 +103,72 @@ public class GameFrame extends JFrame {
 
                         if (lastClickY >= i * CELL_SIZE + SPACING && lastClickY <= CELL_SIZE * (i + 1) - SPACING
                                 && lastClickX >= j * CELL_SIZE + SPACING && lastClickX <= CELL_SIZE * (j + 1) - SPACING) {
+
                             System.err.println("Click on : " + i + " " + j);
-                            if (field.check(i, j)) {
+
+                            if (lastButtonClicked == MouseEvent.BUTTON1
+                                    && success
+                                    && (cells[i][j] == ExternalCell.UNKNOWN || cells[i][j] == ExternalCell.MARK)) {
+
+                                if (cells[i][j] == ExternalCell.MARK) {
+                                    field.setFlag(i, j);
+                                    i = -1;
+                                    lastClickX = -1;
+                                    lastClickY = -1;
+                                    lastButtonClicked = MouseEvent.NOBUTTON;
+                                    marksLabel.setText(field.getMarks() + "/" + field.getMarksLimit());
+                                } else if (field.check(i, j)) {
+                                    i = -1;
+                                    lastClickX = -1;
+                                    lastClickY = -1;
+                                    lastButtonClicked = MouseEvent.NOBUTTON;
+                                } else {
+                                    System.err.println(ScoreItem.timeFormatter.format(LocalTime.ofInstant(
+                                            Instant.ofEpochMilli(gameTimeMillis), ZoneOffset.UTC)));
+                                    i = -1;
+                                    success = false;
+                                }
+
+                                continue loop;
+
+                            } else if (lastButtonClicked == MouseEvent.BUTTON3) {
+                                field.setFlag(i, j);
                                 i = -1;
                                 lastClickX = -1;
                                 lastClickY = -1;
+                                lastButtonClicked = MouseEvent.NOBUTTON;
+                                marksLabel.setText(field.getMarks() + "/" + field.getMarksLimit());
                                 continue loop;
-                            } else {
-                                System.err.println(ScoreItem.timeFormatter.format(LocalTime.ofInstant(Instant.ofEpochMilli(gameTimeMillis), ZoneOffset.UTC)));
-                                success = false;
-                            }
+                            } else System.err.println(lastButtonClicked);
                         }
 
-                        g.setColor(switch (cells[i][j]) {
-                            case UNKNOWN -> {
-                                if (lastPositionY >= i * CELL_SIZE + SPACING && lastPositionY <= CELL_SIZE * (i + 1) - SPACING
-                                        && lastPositionX >= j * CELL_SIZE + SPACING && lastPositionX <= CELL_SIZE * (j + 1) - SPACING) {
-                                    yield Color.red;
-                                } else yield ExternalCell.UNKNOWN.getImage();
-                            }
-                            default -> cells[i][j].getImage();
-                        });
+                        if (cells[i][j] == ExternalCell.UNKNOWN) {
+                            if (lastPositionY >= i * CELL_SIZE + SPACING && lastPositionY <= CELL_SIZE * (i + 1) - SPACING
+                                    && lastPositionX >= j * CELL_SIZE + SPACING && lastPositionX <= CELL_SIZE * (j + 1) - SPACING)
+                                g.setColor(Color.lightGray);
+                            else g.setColor(Color.darkGray);
+                        } else if (cells[i][j] == ExternalCell.MINE)
+                            g.setColor(Color.red);
+                        else
+                            g.setColor(Color.white);
 
-                        g.fillRect(j * CELL_SIZE + SPACING, i * CELL_SIZE + SPACING,
-                                CELL_SIZE - 2 * SPACING, CELL_SIZE - 2 * SPACING);
+                        g.fillRoundRect(j * CELL_SIZE + SPACING, i * CELL_SIZE + SPACING,
+                                CELL_SIZE - 2 * SPACING, CELL_SIZE - 2 * SPACING, 5, 5);
 
+                        if (cells[i][j] != ExternalCell.UNKNOWN
+                                && cells[i][j] != ExternalCell.MINE
+                                && cells[i][j] != ExternalCell.MARK
+                                && cells[i][j] != ExternalCell.WRONG_MARK) {
+                            g.setColor(Color.black);
+                            // Todo fix font and x,y
+                            g.setFont(new Font("Arial", Font.BOLD, FONT_SIZE));
+                            g.drawString(Character.toString(cells[i][j].getSymbol()),
+                                    j * CELL_SIZE + SPACING + (CELL_SIZE - 2 * SPACING) / 2,
+                                    i * CELL_SIZE + SPACING + (CELL_SIZE - 2 * SPACING) / 2);
+
+                        } else g.drawImage(cells[i][j].getImage(),
+                                j * CELL_SIZE + SPACING, i * CELL_SIZE + SPACING,
+                                CELL_SIZE - 2 * SPACING, CELL_SIZE - 2 * SPACING, (img, infoflags, x, y, width, height) -> false);
                     }
 
                 if (field.isCompleted()) {
@@ -140,12 +188,16 @@ public class GameFrame extends JFrame {
 
         @Override
         public void mouseClicked(MouseEvent e) {
+
             System.err.println("Clicked : " + e.getX() + ";" + e.getY());
 
             ((FieldPanel) fieldPanel).lastClickX = e.getX();
             ((FieldPanel) fieldPanel).lastClickY = e.getY();
 
-            gamePanel.repaint();
+            ((FieldPanel) fieldPanel).lastButtonClicked = e.getButton();
+
+            if (((FieldPanel) fieldPanel).success)
+                gamePanel.repaint();
         }
 
         @Override
@@ -185,8 +237,10 @@ public class GameFrame extends JFrame {
             ((FieldPanel) (fieldPanel)).lastPositionX = e.getX();
             ((FieldPanel) (fieldPanel)).lastPositionY = e.getY();
 
-            gamePanel.repaint();
+            if (((FieldPanel) fieldPanel).success)
+                gamePanel.repaint();
         }
+
     }
 
     private void startTimer(long startTimeMillis) {
@@ -202,8 +256,8 @@ public class GameFrame extends JFrame {
         new SaveScoreDialog(LocalTime.ofInstant(Instant.ofEpochMilli(gameTimeMillis), ZoneOffset.UTC));
     }
 
+    // Todo show fail dialog here
     private void onFail() {
-        dispose();
+        new FailDialog(this);
     }
-
 }

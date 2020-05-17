@@ -13,8 +13,7 @@ import javax.swing.border.*;
  * @author Alex Borzikov
  */
 public class FieldParamsDialog extends JDialog {
-    public FieldParamsDialog(Window owner) {
-        super(owner);
+    public FieldParamsDialog() {
         initComponents();
         this.setVisible(true);
     }

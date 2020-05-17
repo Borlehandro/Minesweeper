@@ -15,7 +15,7 @@ public class MainMenu extends JFrame {
     public MainMenu() {
 
         newGameButton.addActionListener(e -> {
-            FieldParamsDialog fieldParams = new FieldParamsDialog(this);
+            FieldParamsDialog fieldParams = new FieldParamsDialog();
         });
 
         this.setSize(500, 500);
