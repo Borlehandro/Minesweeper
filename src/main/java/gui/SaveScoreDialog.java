@@ -31,6 +31,9 @@ public class SaveScoreDialog extends JDialog {
         setVisible(true);
         this.gameTime = gameTime;
 
+        buttonOK.addMouseListener(new ButtonMouseListener(buttonOK));
+        buttonCancel.addMouseListener(new ButtonMouseListener(buttonCancel));
+
         buttonOK.addActionListener(e -> {
             try {
                 onOK();

@@ -162,10 +162,7 @@ public class GameFrame extends JFrame {
                                 && lastPositionX >= j * CELL_SIZE + SPACING && lastPositionX <= CELL_SIZE * (j + 1) - SPACING)
                             g.setColor(Color.lightGray);
                         else g.setColor(Color.darkGray);
-                    } else if (cells[i][j] == ExternalCell.MINE)
-                        g.setColor(Color.red);
-                    else
-                        g.setColor(Color.white);
+                    } else g.setColor(cells[i][j].getColor());
 
                     g.fillRoundRect(j * CELL_SIZE + SPACING, i * CELL_SIZE + SPACING,
                             CELL_SIZE - 2 * SPACING, CELL_SIZE - 2 * SPACING, 5, 5);
@@ -175,11 +172,12 @@ public class GameFrame extends JFrame {
                             && cells[i][j] != ExternalCell.MARK
                             && cells[i][j] != ExternalCell.WRONG_MARK) {
                         g.setColor(Color.black);
+
                         // Todo fix font and x,y
-                        g.setFont(new Font("Arial", Font.BOLD, FONT_SIZE));
+                        g.setFont(new Font("Comics", Font.PLAIN, FONT_SIZE));
                         g.drawString(Character.toString(cells[i][j].getSymbol()),
-                                j * CELL_SIZE + SPACING + (CELL_SIZE - 2 * SPACING) / 2,
-                                i * CELL_SIZE + SPACING + (CELL_SIZE - 2 * SPACING) / 2);
+                                j * CELL_SIZE + SPACING + (CELL_SIZE - 2 * SPACING) / 2 - FONT_SIZE / 3,
+                                i * CELL_SIZE + SPACING + (CELL_SIZE - 2 * SPACING) / 2 + FONT_SIZE / 3);
 
                     } else g.drawImage(cells[i][j].getImage(),
                             j * CELL_SIZE + SPACING, i * CELL_SIZE + SPACING,

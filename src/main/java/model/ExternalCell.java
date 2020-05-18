@@ -7,28 +7,28 @@ import java.util.Properties;
 
 public enum ExternalCell {
 
-    //TODO Change colors to images
+    //TODO Change colors
     UNKNOWN('?', Color.darkGray),
-    ZERO('0', Color.GREEN),
-    ONE('1', Color.yellow),
-    TWO('2', Color.ORANGE),
-    THREE('3', Color.cyan),
-    FOUR('4', Color.blue),
-    FIVE('5', Color.MAGENTA),
-    SIX('6', Color.RED),
-    SEVEN('7', Color.red),
-    EIGHT('8', Color.red),
-    MARK('!', Color.pink),
-    MINE('*', Color.black),
-    WRONG_MARK('w', Color.red);
+    ZERO('0', new Color(0xFFE1F8A8, true)),
+    ONE('1', new Color(0xFFF6F6A4, true)),
+    TWO('2', new Color(0xFFF6DDA8, true)),
+    THREE('3', new Color(0xFFF6CBA8, true)),
+    FOUR('4', new Color(0xFFF6BEAC, true)),
+    FIVE('5', new Color(0xFFF5A9A5, true)),
+    SIX('6', new Color(0xFFF3A0BC, true)),
+    SEVEN('7', new Color(0xFFF5A5F0, true)),
+    EIGHT('8', new Color(0xFFC5A8F5, true)),
+    MARK('!', Color.white),
+    MINE('*', Color.white),
+    WRONG_MARK('w', Color.white);
 
     char symbol;
     Color color;
     Image image;
 
-    ExternalCell(char s, Color с) {
+    ExternalCell(char s, Color c) {
         symbol = s;
-        color = с;
+        color = c;
         try {
             Properties properties = new Properties();
             // Todo change path for *.jar

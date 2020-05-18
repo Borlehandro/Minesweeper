@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class MainMenu extends JFrame {
 
@@ -13,6 +15,10 @@ public class MainMenu extends JFrame {
     private JPanel menuPane;
 
     public MainMenu() {
+
+        newGameButton.addMouseListener(new ButtonMouseListener(newGameButton));
+        scoreButton.addMouseListener(new ButtonMouseListener(scoreButton));
+        aboutButton.addMouseListener(new ButtonMouseListener(aboutButton));
 
         newGameButton.addActionListener(e -> new FieldParamsDialog(this));
 
@@ -86,4 +92,5 @@ public class MainMenu extends JFrame {
     public JComponent $$$getRootComponent$$$() {
         return menuPane;
     }
+
 }

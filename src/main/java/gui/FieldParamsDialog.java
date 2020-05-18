@@ -29,6 +29,9 @@ public class FieldParamsDialog extends JDialog {
         setVisible(true);
         getRootPane().setDefaultButton(buttonOK);
 
+        buttonOK.addMouseListener(new ButtonMouseListener(buttonOK));
+        buttonCancel.addMouseListener(new ButtonMouseListener(buttonCancel));
+
         buttonOK.addActionListener(e -> onOK());
 
         buttonCancel.addActionListener(e -> onCancel());

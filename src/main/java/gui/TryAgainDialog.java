@@ -17,6 +17,10 @@ public class TryAgainDialog extends JDialog {
         setSize(250, 150);
         getRootPane().setDefaultButton(buttonOK);
         this.setVisible(true);
+
+        buttonOK.addMouseListener(new ButtonMouseListener(buttonOK));
+        buttonCancel.addMouseListener(new ButtonMouseListener(buttonCancel));
+
         buttonOK.addActionListener(e -> onOK());
 
         buttonCancel.addActionListener(e -> onCancel());

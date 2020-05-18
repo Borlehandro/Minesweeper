@@ -14,15 +14,10 @@ public class ScoreDialog extends JDialog {
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+        buttonOK.addActionListener(e -> onOK());
     }
 
     private void onOK() {
-        // add your code here
         dispose();
     }
 
