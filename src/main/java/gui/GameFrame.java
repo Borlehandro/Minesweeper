@@ -6,9 +6,7 @@ import score.ScoreItem;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 import java.time.*;
 
 public class GameFrame extends JFrame {
@@ -22,13 +20,40 @@ public class GameFrame extends JFrame {
     private JLabel marksLabel;
 
     public GameFrame(int size, int mines) {
+
         $$$setupUI$$$();
-        this.setVisible(true);
+        setVisible(true);
         field = new Field(size, mines);
         startTimer(System.currentTimeMillis());
-        this.setContentPane(gamePanel);
+        setContentPane(gamePanel);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        setSize((int) screenSize.getHeight(), (int) screenSize.getHeight());
+
+        int MINIMUM_SIZE = (int) (((FieldPanel) fieldPanel).MINIMUM_CELL_SIZE * (1.1d * size + 0.1d));
+
+        System.err.println(MINIMUM_SIZE);
+
+        setMinimumSize(new Dimension(MINIMUM_SIZE, MINIMUM_SIZE));
+
+        ((FieldPanel) fieldPanel).CELL_SIZE = (int) (screenSize.getHeight() / (size + (size + 1) * 0.1d));
+        ((FieldPanel) fieldPanel).SPACING = ((FieldPanel) fieldPanel).CELL_SIZE < 10 ?
+                1 : (int) (((FieldPanel) fieldPanel).CELL_SIZE * 0.1d);
+        ((FieldPanel) fieldPanel).FONT_SIZE = ((FieldPanel) fieldPanel).CELL_SIZE / 2;
+
+
         fieldPanel.addMouseMotionListener(new FieldMotionListener());
         fieldPanel.addMouseListener(new CellClickListener());
+        this.addComponentListener(new ComponentAdapter() {
+            public void componentResized(ComponentEvent componentEvent) {
+                ((FieldPanel) fieldPanel).CELL_SIZE = (int) (Math.min(getSize().getHeight(), getSize().getWidth()) / (size + (size + 1) * 0.1d));
+                ((FieldPanel) fieldPanel).SPACING = ((FieldPanel) fieldPanel).CELL_SIZE < 10 ?
+                        1 : (int) (((FieldPanel) fieldPanel).CELL_SIZE * 0.1d);
+                ((FieldPanel) fieldPanel).FONT_SIZE = ((FieldPanel) fieldPanel).CELL_SIZE / 2;
+
+                System.err.println("NEW SIZE : " + getSize().getHeight() + ";" + getSize().getWidth());
+            }
+        });
+
         marksLabel.setText(0 + "/" + field.getMarksLimit());
     }
 
@@ -74,10 +99,12 @@ public class GameFrame extends JFrame {
         int lastButtonClicked = MouseEvent.NOBUTTON;
 
         boolean success = true;
+        boolean gameFinished = false;
 
-        private static final int SPACING = 5;
-        private static final int CELL_SIZE = 50;
-        private static final int FONT_SIZE = 10;
+        final int MINIMUM_CELL_SIZE = 10;
+        int SPACING = 5;
+        int CELL_SIZE = 50;
+        int FONT_SIZE = 10;
 
         @Override
         protected void paintComponent(Graphics g) {
@@ -96,91 +123,80 @@ public class GameFrame extends JFrame {
 
             System.err.println("LastClick : " + lastClickX + " ; " + lastClickY);
 
-            if (!field.isCompleted()) {
-                loop:
-                for (int i = 0; i < cells.length; i++)
-                    for (int j = 0; j < cells.length; j++) {
+            loop:
+            for (int i = 0; i < cells.length; i++)
+                for (int j = 0; j < cells.length; j++) {
 
-                        if (lastClickY >= i * CELL_SIZE + SPACING && lastClickY <= CELL_SIZE * (i + 1) - SPACING
-                                && lastClickX >= j * CELL_SIZE + SPACING && lastClickX <= CELL_SIZE * (j + 1) - SPACING) {
+                    if (lastClickY >= i * CELL_SIZE + SPACING && lastClickY <= CELL_SIZE * (i + 1) - SPACING
+                            && lastClickX >= j * CELL_SIZE + SPACING && lastClickX <= CELL_SIZE * (j + 1) - SPACING) {
 
-                            System.err.println("Click on : " + i + " " + j);
+                        System.err.println("Click on : " + i + " " + j);
 
-                            if (lastButtonClicked == MouseEvent.BUTTON1
-                                    && success
-                                    && (cells[i][j] == ExternalCell.UNKNOWN || cells[i][j] == ExternalCell.MARK)) {
+                        if (lastButtonClicked == MouseEvent.BUTTON1
+                                && success
+                                && (cells[i][j] == ExternalCell.UNKNOWN || cells[i][j] == ExternalCell.MARK)) {
 
-                                if (cells[i][j] == ExternalCell.MARK) {
-                                    field.setFlag(i, j);
-                                    i = -1;
-                                    lastClickX = -1;
-                                    lastClickY = -1;
-                                    lastButtonClicked = MouseEvent.NOBUTTON;
-                                    marksLabel.setText(field.getMarks() + "/" + field.getMarksLimit());
-                                } else if (field.check(i, j)) {
-                                    i = -1;
-                                    lastClickX = -1;
-                                    lastClickY = -1;
-                                    lastButtonClicked = MouseEvent.NOBUTTON;
-                                } else {
-                                    System.err.println(ScoreItem.timeFormatter.format(LocalTime.ofInstant(
-                                            Instant.ofEpochMilli(gameTimeMillis), ZoneOffset.UTC)));
-                                    i = -1;
-                                    success = false;
-                                }
-
-                                continue loop;
-
-                            } else if (lastButtonClicked == MouseEvent.BUTTON3) {
+                            if (cells[i][j] == ExternalCell.MARK) {
                                 field.setFlag(i, j);
-                                i = -1;
-                                lastClickX = -1;
-                                lastClickY = -1;
-                                lastButtonClicked = MouseEvent.NOBUTTON;
                                 marksLabel.setText(field.getMarks() + "/" + field.getMarksLimit());
-                                continue loop;
-                            } else System.err.println(lastButtonClicked);
-                        }
+                            } else if (!field.check(i, j)) {
+                                System.err.println(ScoreItem.timeFormatter.format(LocalTime.ofInstant(
+                                        Instant.ofEpochMilli(gameTimeMillis), ZoneOffset.UTC)));
+                                success = false;
+                            }
 
-                        if (cells[i][j] == ExternalCell.UNKNOWN) {
-                            if (lastPositionY >= i * CELL_SIZE + SPACING && lastPositionY <= CELL_SIZE * (i + 1) - SPACING
-                                    && lastPositionX >= j * CELL_SIZE + SPACING && lastPositionX <= CELL_SIZE * (j + 1) - SPACING)
-                                g.setColor(Color.lightGray);
-                            else g.setColor(Color.darkGray);
-                        } else if (cells[i][j] == ExternalCell.MINE)
-                            g.setColor(Color.red);
-                        else
-                            g.setColor(Color.white);
+                        } else if (lastButtonClicked == MouseEvent.BUTTON3) {
+                            field.setFlag(i, j);
+                            marksLabel.setText(field.getMarks() + "/" + field.getMarksLimit());
+                        } else System.err.println(lastButtonClicked);
 
-                        g.fillRoundRect(j * CELL_SIZE + SPACING, i * CELL_SIZE + SPACING,
-                                CELL_SIZE - 2 * SPACING, CELL_SIZE - 2 * SPACING, 5, 5);
-
-                        if (cells[i][j] != ExternalCell.UNKNOWN
-                                && cells[i][j] != ExternalCell.MINE
-                                && cells[i][j] != ExternalCell.MARK
-                                && cells[i][j] != ExternalCell.WRONG_MARK) {
-                            g.setColor(Color.black);
-                            // Todo fix font and x,y
-                            g.setFont(new Font("Arial", Font.BOLD, FONT_SIZE));
-                            g.drawString(Character.toString(cells[i][j].getSymbol()),
-                                    j * CELL_SIZE + SPACING + (CELL_SIZE - 2 * SPACING) / 2,
-                                    i * CELL_SIZE + SPACING + (CELL_SIZE - 2 * SPACING) / 2);
-
-                        } else g.drawImage(cells[i][j].getImage(),
-                                j * CELL_SIZE + SPACING, i * CELL_SIZE + SPACING,
-                                CELL_SIZE - 2 * SPACING, CELL_SIZE - 2 * SPACING, (img, infoflags, x, y, width, height) -> false);
+                        i = -1;
+                        lastClickX = -1;
+                        lastClickY = -1;
+                        lastButtonClicked = MouseEvent.NOBUTTON;
+                        continue loop;
                     }
 
-                if (field.isCompleted()) {
-                    gameTimer.stop();
-                    onSuccess();
-                }
+                    if (cells[i][j] == ExternalCell.UNKNOWN) {
+                        if (lastPositionY >= i * CELL_SIZE + SPACING && lastPositionY <= CELL_SIZE * (i + 1) - SPACING
+                                && lastPositionX >= j * CELL_SIZE + SPACING && lastPositionX <= CELL_SIZE * (j + 1) - SPACING)
+                            g.setColor(Color.lightGray);
+                        else g.setColor(Color.darkGray);
+                    } else if (cells[i][j] == ExternalCell.MINE)
+                        g.setColor(Color.red);
+                    else
+                        g.setColor(Color.white);
 
-                if (!success) {
+                    g.fillRoundRect(j * CELL_SIZE + SPACING, i * CELL_SIZE + SPACING,
+                            CELL_SIZE - 2 * SPACING, CELL_SIZE - 2 * SPACING, 5, 5);
+
+                    if (cells[i][j] != ExternalCell.UNKNOWN
+                            && cells[i][j] != ExternalCell.MINE
+                            && cells[i][j] != ExternalCell.MARK
+                            && cells[i][j] != ExternalCell.WRONG_MARK) {
+                        g.setColor(Color.black);
+                        // Todo fix font and x,y
+                        g.setFont(new Font("Arial", Font.BOLD, FONT_SIZE));
+                        g.drawString(Character.toString(cells[i][j].getSymbol()),
+                                j * CELL_SIZE + SPACING + (CELL_SIZE - 2 * SPACING) / 2,
+                                i * CELL_SIZE + SPACING + (CELL_SIZE - 2 * SPACING) / 2);
+
+                    } else g.drawImage(cells[i][j].getImage(),
+                            j * CELL_SIZE + SPACING, i * CELL_SIZE + SPACING,
+                            CELL_SIZE - 2 * SPACING, CELL_SIZE - 2 * SPACING, (img, infoflags, x, y, width, height) -> false);
+                }
+            if (!gameFinished) {
+                if (field.isCompleted() && success) {
                     gameTimer.stop();
+                    gameFinished = true;
+                    onSuccess();
+                } else if (!success) {
+                    gameTimer.stop();
+                    gameFinished = true;
                     onFail();
                 }
             }
+
         }
     }
 
@@ -196,8 +212,9 @@ public class GameFrame extends JFrame {
 
             ((FieldPanel) fieldPanel).lastButtonClicked = e.getButton();
 
-            if (((FieldPanel) fieldPanel).success)
+            if (((FieldPanel) fieldPanel).success && !field.isCompleted()) {
                 gamePanel.repaint();
+            }
         }
 
         @Override
@@ -237,8 +254,9 @@ public class GameFrame extends JFrame {
             ((FieldPanel) (fieldPanel)).lastPositionX = e.getX();
             ((FieldPanel) (fieldPanel)).lastPositionY = e.getY();
 
-            if (((FieldPanel) fieldPanel).success)
+            if (((FieldPanel) fieldPanel).success && !field.isCompleted()) {
                 gamePanel.repaint();
+            }
         }
 
     }
@@ -253,11 +271,12 @@ public class GameFrame extends JFrame {
     }
 
     private void onSuccess() {
-        new SaveScoreDialog(LocalTime.ofInstant(Instant.ofEpochMilli(gameTimeMillis), ZoneOffset.UTC));
+        this.setResizable(false);
+        new SaveScoreDialog(this, LocalTime.ofInstant(Instant.ofEpochMilli(gameTimeMillis), ZoneOffset.UTC));
     }
 
-    // Todo show fail dialog here
     private void onFail() {
-        new FailDialog(this);
+        this.setResizable(false);
+        new TryAgainDialog(this);
     }
 }

@@ -23,18 +23,33 @@ public class SaveScoreDialog extends JDialog {
 
     private final LocalTime gameTime;
 
-    public SaveScoreDialog(LocalTime gameTime) {
+    public SaveScoreDialog(Window owner, LocalTime gameTime) {
+        super(owner);
         setContentPane(contentPane);
+        setSize(100, 150);
+        setResizable(false);
         setVisible(true);
         this.gameTime = gameTime;
+
         buttonOK.addActionListener(e -> {
             try {
                 onOK();
-            } catch (NoResourceInitException | IOException noResourceInitException) {
-                noResourceInitException.printStackTrace();
+            } catch (NoResourceInitException | IOException exception) {
+                exception.printStackTrace();
             }
         });
+
         buttonCancel.addActionListener(e -> onCancel());
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                onCancel();
+            }
+        });
+
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+
     }
 
     private void onOK() throws NoResourceInitException, IOException {
@@ -42,11 +57,13 @@ public class SaveScoreDialog extends JDialog {
         System.err.println(nameField.getText());
         if (!nameField.getText().isEmpty()) {
             new ScoreManager().add(this.nameField.getText(), gameTime);
+            new TryAgainDialog(getOwner());
             dispose();
         }
     }
 
     private void onCancel() {
+        new TryAgainDialog(getOwner());
         dispose();
     }
 
@@ -97,4 +114,5 @@ public class SaveScoreDialog extends JDialog {
     public JComponent $$$getRootComponent$$$() {
         return contentPane;
     }
+
 }

@@ -14,11 +14,14 @@ public class MainMenu extends JFrame {
 
     public MainMenu() {
 
-        newGameButton.addActionListener(e -> {
-            FieldParamsDialog fieldParams = new FieldParamsDialog();
-        });
+        newGameButton.addActionListener(e -> new FieldParamsDialog(this));
 
-        this.setSize(500, 500);
+        aboutButton.addActionListener(e -> JOptionPane.showMessageDialog(this,
+                "Simple Minesweeper game with console and UI modes.\nDeveloped by Alex Borzokov 2020."));
+
+        scoreButton.addActionListener(e -> new HighScoresFrame());
+
+        this.setSize(75, 150);
         this.setVisible(true);
         this.setResizable(false);
         this.setContentPane(menuPane);
