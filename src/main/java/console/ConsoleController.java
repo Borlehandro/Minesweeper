@@ -1,10 +1,13 @@
 package console;
 
+import api.ServerCommand;
+import exceptions.NoResourceInitException;
 import model.ExternalCell;
 import model.Field;
+import model.Pair;
 import score.ScoreItem;
 import score.ScoreManager;
-import exceptions.NoResourceInitException;
+import server_api.ServerController;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,34 +16,33 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ConsoleController {
 
-    private final BufferedReader reader;
+    private final BufferedReader consoleReader;
     private final ScoreManager scoreManager;
 
-    public ConsoleController(BufferedReader reader) throws IOException {
-        this.reader = reader;
+    private final ServerController serverController;
+
+    public ConsoleController(BufferedReader consoleReader, ServerController serverController) throws IOException {
+        this.consoleReader = consoleReader;
+        this.serverController = serverController;
         scoreManager = new ScoreManager();
     }
 
-    public void start() throws IOException {
+    public void start() throws IOException, ClassNotFoundException {
 
         System.out.println("Welcome to console mode! Type \"help\" to get more information.");
 
-
-
         String s;
-        while ((s = reader.readLine()) != null) {
+        while ((s = consoleReader.readLine()) != null) {
             Command command = CommandParser.parse(s);
             switch (command) {
                 case HELP:
-                    System.out.println(CommandParser.CONSOLE_COMMANDS_INFO);
+                    System.out.println(serverController.send(ServerCommand.CONSOLE_HELP));
                     break;
                 case ABOUT:
-                    System.out.println(CommandParser.ABOUT);
+                    System.out.println(serverController.send(ServerCommand.ABOUT));
                     break;
                 case NEW_GAME: {
                     String[] args = s.split(" ");
@@ -49,7 +51,8 @@ public class ConsoleController {
                     if (numberMines <= size * size - 1) {
                         try {
                             run(size, numberMines);
-                        } catch (IOException | NoResourceInitException e) {
+                        } catch (IOException | NoResourceInitException | ClassNotFoundException e) {
+                            System.err.println(e.getMessage());
                             System.out.println("Can't run the game!");
                             continue;
                         }
@@ -62,19 +65,17 @@ public class ConsoleController {
 
                 case HIGH_SCORES: {
 
-                    try {
+                    // ?)
+                    TreeSet<ScoreItem> scoreTable = (TreeSet<ScoreItem>) serverController.sendWithObjectResult(ServerCommand.HIGH_SCORE);
 
-                        TreeSet<ScoreItem> scoreTable = scoreManager.getScoreTable();
+                    // scoreManager.getScoreTable();
 
-                        if (scoreTable != null && !scoreTable.isEmpty()) {
-                            System.out.println("Score table.\n");
-                            scoreTable.forEach(System.out::println);
-                            System.out.println();
-                        } else System.out.println("Score table not found. You can be the first player!");
+                    if (scoreTable != null && !scoreTable.isEmpty()) {
+                        System.out.println("Score table.\n");
+                        scoreTable.forEach(System.out::println);
+                        System.out.println();
+                    } else System.out.println("Score table not found. You can be the first player!");
 
-                    } catch (NoResourceInitException e) {
-                        System.out.println(e.getMessage());
-                    }
                 }
                 break;
 
@@ -84,13 +85,16 @@ public class ConsoleController {
         }
     }
 
-    private void run(int size, int numberMines) throws IOException, NoResourceInitException {
+    private void run(int size, int numberMines) throws IOException, NoResourceInitException, ClassNotFoundException {
+
+        ServerCommand serverCommand = ServerCommand.NEW_GAME;
+        serverCommand.setArgs(String.valueOf(size), String.valueOf(numberMines));
+        // Field field = (Field) serverController.sendWithObjectResult(serverCommand);
+        ExternalCell[][] cells = ExternalCell.jsonToTable(serverController.send(serverCommand));
 
         long start = System.currentTimeMillis();
 
         boolean failed = false;
-
-        Field field = new Field(size, numberMines);
 
         String line = null;
 
@@ -108,23 +112,30 @@ public class ConsoleController {
                     switch (command) {
                         case CHECK -> {
                             for (int i = 1; i < (args.length - 1); i += 2) {
-                                boolean success = field.check(Integer.parseInt(args[i]), Integer.parseInt(args[i + 1]));
-                                if (success) {
+                                // Todo test
+                                ServerCommand checkCommand = ServerCommand.CHECK;
+                                checkCommand.setArgs(args[i], args[i + 1]);
+                                cells = ExternalCell.jsonToTable(serverController.send(checkCommand));
+
+                                if (cells != null) {
                                     System.out.println("Checked.");
                                 } else {
                                     failed = true;
-                                    showField(field);
+                                    showField(ExternalCell.jsonToTable(serverController.send(ServerCommand.SHOW_FIELD)));
                                     break run;
                                 }
                             }
                         }
                         case FLAG -> {
                             for (int i = 1; i < (args.length - 1); i += 2) {
-                                boolean success = field.setFlag(Integer.parseInt(args[i]), Integer.parseInt(args[i + 1]));
-                                if (success) {
+                                ServerCommand flagCommand = ServerCommand.FLAG;
+                                flagCommand.setArgs(args[i], args[i+1]);
+                                cells = ExternalCell.jsonToTable(serverController.send(flagCommand));;
+                                if (cells != null) {
                                     System.out.println("Fagged.");
                                 } else {
                                     System.out.println("No flags available!");
+                                    cells = ExternalCell.jsonToTable(serverController.send(ServerCommand.SHOW_FIELD));
                                 }
                             }
 
@@ -139,12 +150,12 @@ public class ConsoleController {
                 }
             }
 
-            showField(field);
+            showField(cells);
 
-            if (field.isCompleted())
+            if (Boolean.parseBoolean(serverController.send(ServerCommand.IS_COMPLETED)))
                 break;
 
-        } while ((line = reader.readLine()) != null);
+        } while ((line = consoleReader.readLine()) != null);
 
         if (failed)
             System.out.println("FAIL!");
@@ -165,16 +176,19 @@ public class ConsoleController {
                         : "It's the best time!");
 
             System.out.print("Enter your name: ");
-            String name = reader.readLine();
+            String name = consoleReader.readLine();
 
             scoreManager.add(name, duration);
         }
     }
 
-    private void showField(Field field) {
-        System.out.println("Marks : " + field.getMarks() + "/" + field.getMarksLimit());
+    private void showField(ExternalCell[][] externalCells) throws IOException, ClassNotFoundException {
 
-        Character[][] cells = Arrays.stream(field.getExternalCells()).map(item -> Arrays.stream(item).map(ExternalCell::getSymbol).toArray(Character[]::new)).toArray(Character[][]::new);
+        Pair<Integer> marks = (Pair<Integer>) serverController.sendWithObjectResult(ServerCommand.GET_MARKS);
+
+        System.out.println("Marks : " + marks.x + "/" + marks.y);
+
+        Character[][] cells = Arrays.stream(externalCells).map(item -> Arrays.stream(item).map(ExternalCell::getSymbol).toArray(Character[]::new)).toArray(Character[][]::new);
 
         System.out.print("  ");
         for (int j = 0; j < cells.length; ++j) {

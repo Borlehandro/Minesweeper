@@ -1,11 +1,9 @@
 package gui;
 
+import server_api.ServerController;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 public class MainMenu extends JFrame {
 
@@ -13,6 +11,13 @@ public class MainMenu extends JFrame {
     private JButton scoreButton;
     private JButton aboutButton;
     private JPanel menuPane;
+
+    private ServerController serverController;
+
+    public MainMenu(ServerController controller) {
+        this();
+        serverController = controller;
+    }
 
     public MainMenu() {
 
