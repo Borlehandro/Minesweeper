@@ -1,29 +1,39 @@
 package gui;
 
+import api.ServerCommand;
 import model.ExternalCell;
 import model.Field;
+import model.Pair;
 import score.ScoreItem;
+import serialization.Serializer;
+import server_api.ServerController;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 import java.time.*;
 
 public class GameFrame extends JFrame {
+
     private long gameTimeMillis;
     private Timer gameTimer;
-    private final Field field;
+    private ExternalCell[][] cells;
+    private ServerController serverController;
 
     private JPanel gamePanel;
     private JPanel fieldPanel;
     private JLabel timeLabel;
     private JLabel marksLabel;
 
-    public GameFrame(int size, int mines) {
+    public GameFrame(ServerController controller, int size, int mines) throws IOException {
 
         $$$setupUI$$$();
         setVisible(true);
-        field = new Field(size, mines);
+        serverController = controller;
+        ServerCommand createCommand = ServerCommand.NEW_GAME;
+        createCommand.setArgs(String.valueOf(size), String.valueOf(mines));
+        cells = Serializer.jsonToExternal(serverController.send(createCommand));
         startTimer(System.currentTimeMillis());
         setContentPane(gamePanel);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -53,8 +63,9 @@ public class GameFrame extends JFrame {
                 System.err.println("NEW SIZE : " + getSize().getHeight() + ";" + getSize().getWidth());
             }
         });
-
-        marksLabel.setText(0 + "/" + field.getMarksLimit());
+        Pair<Integer> marks = Serializer.jsonToPair(serverController.send(ServerCommand.GET_MARKS));
+        marksLabel.setText(marks.x + "/" + marks.y);
+        // marksLabel.setText(0 + "/" + field.getMarksLimit());
     }
 
     /**
@@ -109,7 +120,12 @@ public class GameFrame extends JFrame {
         @Override
         protected void paintComponent(Graphics g) {
 
-            ExternalCell[][] cells = field.getExternalCells();
+//            try {
+//                cells = Serializer.jsonToExternal(serverController.send(ServerCommand.SHOW_FIELD));
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+
             System.err.println("REPAINT!");
 
             // Debug
@@ -129,32 +145,48 @@ public class GameFrame extends JFrame {
 
                     if (lastClickY >= i * CELL_SIZE + SPACING && lastClickY <= CELL_SIZE * (i + 1) - SPACING
                             && lastClickX >= j * CELL_SIZE + SPACING && lastClickX <= CELL_SIZE * (j + 1) - SPACING) {
+                        try {
 
-                        System.err.println("Click on : " + i + " " + j);
+                            System.err.println("Click on : " + i + " " + j);
 
-                        if (lastButtonClicked == MouseEvent.BUTTON1
-                                && success
-                                && (cells[i][j] == ExternalCell.UNKNOWN || cells[i][j] == ExternalCell.MARK)) {
+                            if (lastButtonClicked == MouseEvent.BUTTON1
+                                    && success
+                                    && (cells[i][j] == ExternalCell.UNKNOWN || cells[i][j] == ExternalCell.MARK)) {
 
-                            if (cells[i][j] == ExternalCell.MARK) {
-                                field.setFlag(i, j);
-                                marksLabel.setText(field.getMarks() + "/" + field.getMarksLimit());
-                            } else if (!field.check(i, j)) {
-                                System.err.println(ScoreItem.timeFormatter.format(LocalTime.ofInstant(
-                                        Instant.ofEpochMilli(gameTimeMillis), ZoneOffset.UTC)));
-                                success = false;
-                            }
+                                if (cells[i][j] == ExternalCell.MARK) {
+                                    ServerCommand flagCommand = ServerCommand.FLAG;
+                                    flagCommand.setArgs(String.valueOf(i), String.valueOf(j));
+                                    serverController.send(flagCommand);
+                                    Pair<Integer> marks = Serializer.jsonToPair(serverController.send(ServerCommand.GET_MARKS));
+                                    marksLabel.setText(marks.x + "/" + marks.y);
+                                } else {
+                                    ServerCommand checkCommand = ServerCommand.CHECK;
+                                    checkCommand.setArgs(String.valueOf(i), String.valueOf(j));
+                                    cells = Serializer.jsonToExternal(serverController.send(checkCommand));
+                                    if (cells.length == 0) {
+                                        System.err.println(ScoreItem.timeFormatter.format(LocalTime.ofInstant(
+                                                Instant.ofEpochMilli(gameTimeMillis), ZoneOffset.UTC)));
+                                        success = false;
+                                        cells = Serializer.jsonToExternal(serverController.send(ServerCommand.SHOW_FIELD));
+                                    }
+                                }
 
-                        } else if (lastButtonClicked == MouseEvent.BUTTON3) {
-                            field.setFlag(i, j);
-                            marksLabel.setText(field.getMarks() + "/" + field.getMarksLimit());
-                        } else System.err.println(lastButtonClicked);
+                            } else if (lastButtonClicked == MouseEvent.BUTTON3) {
+                                ServerCommand flagCommand = ServerCommand.FLAG;
+                                flagCommand.setArgs(String.valueOf(i), String.valueOf(j));
+                                cells = Serializer.jsonToExternal(serverController.send(flagCommand));
+                                Pair<Integer> marks = Serializer.jsonToPair(serverController.send(ServerCommand.GET_MARKS));
+                                marksLabel.setText(marks.x + "/" + marks.y);
+                            } else System.err.println(lastButtonClicked);
 
-                        i = -1;
-                        lastClickX = -1;
-                        lastClickY = -1;
-                        lastButtonClicked = MouseEvent.NOBUTTON;
-                        continue loop;
+                            i = -1;
+                            lastClickX = -1;
+                            lastClickY = -1;
+                            lastButtonClicked = MouseEvent.NOBUTTON;
+                            continue loop;
+                        } catch (IOException e) {
+                            System.err.println(e.getMessage());
+                        }
                     }
 
                     if (cells[i][j] == ExternalCell.UNKNOWN) {
@@ -184,14 +216,18 @@ public class GameFrame extends JFrame {
                             CELL_SIZE - 2 * SPACING, CELL_SIZE - 2 * SPACING, (img, infoflags, x, y, width, height) -> false);
                 }
             if (!gameFinished) {
-                if (field.isCompleted() && success) {
-                    gameTimer.stop();
-                    gameFinished = true;
-                    onSuccess();
-                } else if (!success) {
-                    gameTimer.stop();
-                    gameFinished = true;
-                    onFail();
+                try {
+                    if (Boolean.parseBoolean(serverController.send(ServerCommand.IS_COMPLETED)) && success) {
+                        gameTimer.stop();
+                        gameFinished = true;
+                        onSuccess();
+                    } else if (!success) {
+                        gameTimer.stop();
+                        gameFinished = true;
+                        onFail();
+                    }
+                } catch (IOException e) {
+                    System.err.println(e.getMessage());
                 }
             }
 
@@ -210,7 +246,7 @@ public class GameFrame extends JFrame {
 
             ((FieldPanel) fieldPanel).lastButtonClicked = e.getButton();
 
-            if (((FieldPanel) fieldPanel).success && !field.isCompleted()) {
+            if (((FieldPanel) fieldPanel).success && !((FieldPanel) fieldPanel).gameFinished/*!Boolean.parseBoolean(serverController.send(ServerCommand.IS_COMPLETED))*/) {
                 gamePanel.repaint();
             }
         }
@@ -251,9 +287,12 @@ public class GameFrame extends JFrame {
 
             ((FieldPanel) (fieldPanel)).lastPositionX = e.getX();
             ((FieldPanel) (fieldPanel)).lastPositionY = e.getY();
-
-            if (((FieldPanel) fieldPanel).success && !field.isCompleted()) {
-                gamePanel.repaint();
+            try {
+                if (((FieldPanel) fieldPanel).success && !Boolean.parseBoolean(serverController.send(ServerCommand.IS_COMPLETED))) {
+                    gamePanel.repaint();
+                }
+            } catch (IOException exception) {
+                System.err.println(exception.getMessage());
             }
         }
 
@@ -270,11 +309,11 @@ public class GameFrame extends JFrame {
 
     private void onSuccess() {
         this.setResizable(false);
-        new SaveScoreDialog(this, LocalTime.ofInstant(Instant.ofEpochMilli(gameTimeMillis), ZoneOffset.UTC));
+        new SaveScoreDialog(this, LocalTime.ofInstant(Instant.ofEpochMilli(gameTimeMillis), ZoneOffset.UTC), serverController);
     }
 
     private void onFail() {
         this.setResizable(false);
-        new TryAgainDialog(this);
+        new TryAgainDialog(this, serverController);
     }
 }

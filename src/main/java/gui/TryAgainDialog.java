@@ -1,5 +1,7 @@
 package gui;
 
+import server_api.ServerController;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -9,9 +11,12 @@ public class TryAgainDialog extends JDialog {
     private JButton buttonOK;
     private JButton buttonCancel;
 
-    public TryAgainDialog(Window owner) {
+    ServerController controller;
+
+    public TryAgainDialog(Window owner, ServerController controller) {
         super(owner);
         $$$setupUI$$$();
+        this.controller = controller;
         setContentPane(contentPane);
         setResizable(false);
         setSize(250, 150);
@@ -36,7 +41,7 @@ public class TryAgainDialog extends JDialog {
 
     private void onOK() {
         getOwner().dispose();
-        new FieldParamsDialog();
+        new FieldParamsDialog(controller);
         dispose();
     }
 

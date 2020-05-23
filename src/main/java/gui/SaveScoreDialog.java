@@ -1,10 +1,12 @@
 package gui;
 
+import api.ServerCommand;
 import exceptions.NoResourceInitException;
 import score.Parser;
 import score.ScoreItem;
 import score.ScoreManager;
 import score.Writer;
+import server_api.ServerController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,9 +24,11 @@ public class SaveScoreDialog extends JDialog {
     private JTextField nameField;
 
     private final LocalTime gameTime;
+    private final ServerController controller;
 
-    public SaveScoreDialog(Window owner, LocalTime gameTime) {
+    public SaveScoreDialog(Window owner, LocalTime gameTime, ServerController controller) {
         super(owner);
+        this.controller = controller;
         setContentPane(contentPane);
         setSize(100, 150);
         setResizable(false);
@@ -37,7 +41,7 @@ public class SaveScoreDialog extends JDialog {
         buttonOK.addActionListener(e -> {
             try {
                 onOK();
-            } catch (NoResourceInitException | IOException exception) {
+            } catch (IOException exception) {
                 exception.printStackTrace();
             }
         });
@@ -55,18 +59,20 @@ public class SaveScoreDialog extends JDialog {
 
     }
 
-    private void onOK() throws NoResourceInitException, IOException {
+    private void onOK() throws IOException {
         System.err.println("TEST");
         System.err.println(nameField.getText());
         if (!nameField.getText().isEmpty()) {
-            new ScoreManager().add(this.nameField.getText(), gameTime);
-            new TryAgainDialog(getOwner());
+            ServerCommand serverCommand = ServerCommand.SAVE_SCORE;
+            serverCommand.setArgs(this.nameField.getText(), ScoreItem.timeFormatter.format(gameTime));
+            controller.send(serverCommand);
+            new TryAgainDialog(getOwner(), controller);
             dispose();
         }
     }
 
     private void onCancel() {
-        new TryAgainDialog(getOwner());
+        new TryAgainDialog(getOwner(), controller);
         dispose();
     }
 

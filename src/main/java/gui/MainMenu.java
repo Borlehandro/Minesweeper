@@ -1,9 +1,11 @@
 package gui;
 
+import api.ServerCommand;
 import server_api.ServerController;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 
 public class MainMenu extends JFrame {
 
@@ -25,12 +27,18 @@ public class MainMenu extends JFrame {
         scoreButton.addMouseListener(new ButtonMouseListener(scoreButton));
         aboutButton.addMouseListener(new ButtonMouseListener(aboutButton));
 
-        newGameButton.addActionListener(e -> new FieldParamsDialog(this));
+        newGameButton.addActionListener(e -> new FieldParamsDialog(this, serverController));
 
-        aboutButton.addActionListener(e -> JOptionPane.showMessageDialog(this,
-                "Simple Minesweeper game with console and UI modes.\nDeveloped by Alex Borzokov 2020."));
+        aboutButton.addActionListener(e -> {
+            try {
+                JOptionPane.showMessageDialog(this,
+                        serverController.send(ServerCommand.ABOUT));
+            } catch (IOException exception) {
+                exception.printStackTrace();
+            }
+        });
 
-        scoreButton.addActionListener(e -> new HighScoresFrame());
+        scoreButton.addActionListener(e -> new HighScoresFrame(serverController));
 
         this.setSize(75, 150);
         this.setVisible(true);

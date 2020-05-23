@@ -1,8 +1,11 @@
 package gui;
 
+import api.ServerCommand;
 import exceptions.NoResourceInitException;
 import score.ScoreItem;
 import score.ScoreManager;
+import serialization.Serializer;
+import server_api.ServerController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,7 +20,10 @@ public class HighScoresFrame extends JFrame {
     private JPanel contentPane;
     private JTable scoreTable;
 
-    public HighScoresFrame() {
+    private final ServerController serverController;
+
+    public HighScoresFrame(ServerController controller) {
+        serverController = controller;
         $$$setupUI$$$();
         setSize(300, 300);
         setVisible(true);
@@ -53,7 +59,7 @@ public class HighScoresFrame extends JFrame {
 
     private void createUIComponents() {
         try {
-            TreeSet<ScoreItem> tableData = new ScoreManager().getScoreTable();
+            TreeSet<ScoreItem> tableData = Serializer.jsonToScoreTable(serverController.send(ServerCommand.HIGH_SCORE));
             Vector<Vector<String>> data = tableData.stream().map(item -> {
                 Vector<String> res = new Vector<>();
                 Collections.addAll(res, item.getName(),
@@ -65,7 +71,7 @@ public class HighScoresFrame extends JFrame {
             Collections.addAll(header, "Name", "Note date", "Result");
             System.err.println(data);
             scoreTable = new JTable(data, header);
-        } catch (IOException | NoResourceInitException e) {
+        } catch (IOException e) {
             System.err.println(e.getMessage());
             scoreTable = new JTable();
         }

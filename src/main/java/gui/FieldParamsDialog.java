@@ -1,8 +1,11 @@
 package gui;
 
+import server_api.ServerController;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 
 public class FieldParamsDialog extends JDialog {
     private JPanel contentPane;
@@ -13,12 +16,16 @@ public class FieldParamsDialog extends JDialog {
     private JLabel sizeLable;
     private JLabel numberMinesLable;
 
-    public FieldParamsDialog(Window owner) {
+    private final ServerController controller;
+
+    public FieldParamsDialog(Window owner, ServerController controller) {
         super(owner);
+        this.controller = controller;
         init();
     }
 
-    public FieldParamsDialog() {
+    public FieldParamsDialog(ServerController controller) {
+        this.controller = controller;
         init();
     }
 
@@ -32,7 +39,13 @@ public class FieldParamsDialog extends JDialog {
         buttonOK.addMouseListener(new ButtonMouseListener(buttonOK));
         buttonCancel.addMouseListener(new ButtonMouseListener(buttonCancel));
 
-        buttonOK.addActionListener(e -> onOK());
+        buttonOK.addActionListener(e -> {
+            try {
+                onOK();
+            } catch (IOException exception) {
+                exception.printStackTrace();
+            }
+        });
 
         buttonCancel.addActionListener(e -> onCancel());
 
@@ -45,9 +58,9 @@ public class FieldParamsDialog extends JDialog {
         });
     }
 
-    private void onOK() {
+    private void onOK() throws IOException {
         if (!sizeField.getText().isEmpty() && !numberMinesField.getText().isEmpty()) {
-            new GameFrame(Integer.parseInt(sizeField.getText()), Integer.parseInt(numberMinesField.getText()));
+            new GameFrame(controller, Integer.parseInt(sizeField.getText()), Integer.parseInt(numberMinesField.getText()));
             getOwner().dispose();
             dispose();
         }
