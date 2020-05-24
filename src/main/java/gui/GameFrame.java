@@ -150,29 +150,19 @@ public class GameFrame extends JFrame {
                                     && (cells[i][j] == ExternalCell.UNKNOWN || cells[i][j] == ExternalCell.MARK)) {
 
                                 if (cells[i][j] == ExternalCell.MARK) {
-                                    ServerCommand flagCommand = ServerCommand.FLAG;
-                                    flagCommand.setArgs(String.valueOf(i), String.valueOf(j));
-                                    serverController.send(flagCommand);
-                                    Pair<Integer> marks = Serializer.jsonToPair(serverController.send(ServerCommand.GET_MARKS));
-                                    marksLabel.setText(marks.x + "/" + marks.y);
+                                    changeFlagStatus(i, j);
                                 } else {
                                     ServerCommand checkCommand = ServerCommand.CHECK;
                                     checkCommand.setArgs(String.valueOf(i), String.valueOf(j));
                                     cells = Serializer.jsonToExternal(serverController.send(checkCommand));
                                     if (cells.length == 0) {
-//                                        System.err.println(ScoreItem.timeFormatter.format(LocalTime.ofInstant(
-//                                                Instant.ofEpochMilli(gameTimeMillis), ZoneOffset.UTC)));
                                         success = false;
                                         cells = Serializer.jsonToExternal(serverController.send(ServerCommand.SHOW_FIELD));
                                     }
                                 }
 
                             } else if (lastButtonClicked == MouseEvent.BUTTON3) {
-                                ServerCommand flagCommand = ServerCommand.FLAG;
-                                flagCommand.setArgs(String.valueOf(i), String.valueOf(j));
-                                cells = Serializer.jsonToExternal(serverController.send(flagCommand));
-                                Pair<Integer> marks = Serializer.jsonToPair(serverController.send(ServerCommand.GET_MARKS));
-                                marksLabel.setText(marks.x + "/" + marks.y);
+                                changeFlagStatus(i, j);
                             }
 
                             i = -1;
@@ -227,6 +217,14 @@ public class GameFrame extends JFrame {
                 }
             }
 
+        }
+
+        private void changeFlagStatus(int i, int j) throws IOException {
+            ServerCommand flagCommand = ServerCommand.FLAG;
+            flagCommand.setArgs(String.valueOf(i), String.valueOf(j));
+            cells = Serializer.jsonToExternal(serverController.send(flagCommand));
+            Pair<Integer> marks = Serializer.jsonToPair(serverController.send(ServerCommand.GET_MARKS));
+            marksLabel.setText(marks.x + "/" + marks.y);
         }
     }
 
