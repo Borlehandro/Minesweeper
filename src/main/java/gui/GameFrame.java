@@ -25,11 +25,30 @@ public class GameFrame extends JFrame {
     private JLabel timeLabel;
     private JLabel marksLabel;
 
-    public GameFrame(ServerController controller, int size, int mines) throws IOException {
+    public GameFrame(int size, int mines) throws IOException {
+
+        this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+        this.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent ev) {
+                try {
+                    serverController.send(ServerCommand.CLOSE);
+                    serverController.close();
+                } catch (IOException exception) {
+                    exception.printStackTrace();
+                }
+
+                dispose();
+            }
+        });
+
+
         ExternalCell.loadImages();
         $$$setupUI$$$();
         setVisible(true);
-        serverController = controller;
+
+        serverController = new ServerController();
+
         ServerCommand createCommand = ServerCommand.NEW_GAME;
         createCommand.setArgs(String.valueOf(size), String.valueOf(mines));
         cells = Serializer.jsonToExternal(serverController.send(createCommand));
@@ -221,7 +240,7 @@ public class GameFrame extends JFrame {
 
             ((FieldPanel) fieldPanel).lastButtonClicked = e.getButton();
 
-            if (((FieldPanel) fieldPanel).success && !((FieldPanel) fieldPanel).gameFinished/*!Boolean.parseBoolean(serverController.send(ServerCommand.IS_COMPLETED))*/) {
+            if (((FieldPanel) fieldPanel).success && !((FieldPanel) fieldPanel).gameFinished) {
                 gamePanel.repaint();
             }
         }
@@ -289,6 +308,6 @@ public class GameFrame extends JFrame {
 
     private void onFail() {
         this.setResizable(false);
-        new TryAgainDialog(this, serverController);
+        new TryAgainDialog(this);
     }
 }

@@ -16,16 +16,12 @@ public class FieldParamsDialog extends JDialog {
     private JLabel sizeLable;
     private JLabel numberMinesLable;
 
-    private final ServerController controller;
-
-    public FieldParamsDialog(Window owner, ServerController controller) {
+    public FieldParamsDialog(Window owner) {
         super(owner);
-        this.controller = controller;
         init();
     }
 
-    public FieldParamsDialog(ServerController controller) {
-        this.controller = controller;
+    public FieldParamsDialog() {
         init();
     }
 
@@ -60,7 +56,7 @@ public class FieldParamsDialog extends JDialog {
 
     private void onOK() throws IOException {
         if (!sizeField.getText().isEmpty() && !numberMinesField.getText().isEmpty()) {
-            new GameFrame(controller, Integer.parseInt(sizeField.getText()), Integer.parseInt(numberMinesField.getText()));
+            new GameFrame(Integer.parseInt(sizeField.getText()), Integer.parseInt(numberMinesField.getText()));
             getOwner().dispose();
             dispose();
         }

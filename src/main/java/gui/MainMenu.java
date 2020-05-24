@@ -5,6 +5,8 @@ import server_api.ServerController;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 
 public class MainMenu extends JFrame {
@@ -16,15 +18,29 @@ public class MainMenu extends JFrame {
 
     private ServerController serverController;
 
-    public MainMenu(ServerController controller) {
-        
-        serverController = controller;
+    public MainMenu() throws IOException {
+
+        this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+        this.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent ev) {
+                try {
+                    serverController.send(ServerCommand.CLOSE);
+                    serverController.close();
+                } catch (IOException exception) {
+                    exception.printStackTrace();
+                }
+                dispose();
+            }
+        });
+
+        serverController = new ServerController();
 
         newGameButton.addMouseListener(new ButtonMouseListener(newGameButton));
         scoreButton.addMouseListener(new ButtonMouseListener(scoreButton));
         aboutButton.addMouseListener(new ButtonMouseListener(aboutButton));
 
-        newGameButton.addActionListener(e -> new FieldParamsDialog(this, serverController));
+        newGameButton.addActionListener(e -> new FieldParamsDialog(this));
 
         aboutButton.addActionListener(e -> {
             try {

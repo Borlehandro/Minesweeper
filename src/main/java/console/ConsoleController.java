@@ -21,9 +21,9 @@ public class ConsoleController {
 
     private final ServerController serverController;
 
-    public ConsoleController(BufferedReader consoleReader, ServerController serverController) {
+    public ConsoleController(BufferedReader consoleReader) throws IOException {
         this.consoleReader = consoleReader;
-        this.serverController = serverController;
+        this.serverController = new ServerController();
     }
 
     public void start() throws IOException {
@@ -63,8 +63,10 @@ public class ConsoleController {
                     } else System.out.println("Wrong field parameters.");
                 }
                 break;
-                case EXIT:
+                case EXIT: {
+                    serverController.close();
                     return;
+                }
 
                 case HIGH_SCORES: {
 

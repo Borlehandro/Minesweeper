@@ -5,18 +5,16 @@ import server_api.ServerController;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 
 public class TryAgainDialog extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
 
-    ServerController controller;
-
-    public TryAgainDialog(Window owner, ServerController controller) {
+    public TryAgainDialog(Window owner) {
         super(owner);
         $$$setupUI$$$();
-        this.controller = controller;
         setContentPane(contentPane);
         setResizable(false);
         setSize(250, 150);
@@ -41,14 +39,18 @@ public class TryAgainDialog extends JDialog {
 
     private void onOK() {
         getOwner().dispose();
-        new FieldParamsDialog(controller);
+        new FieldParamsDialog();
         dispose();
     }
 
     private void onCancel() {
-        getOwner().dispose();
-        new MainMenu(controller);
-        dispose();
+        try {
+            getOwner().dispose();
+            new MainMenu();
+            dispose();
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
     }
 
     /**

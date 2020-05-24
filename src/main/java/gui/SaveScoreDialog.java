@@ -60,19 +60,17 @@ public class SaveScoreDialog extends JDialog {
     }
 
     private void onOK() throws IOException {
-        System.err.println("TEST");
-        System.err.println(nameField.getText());
         if (!nameField.getText().isEmpty()) {
             ServerCommand serverCommand = ServerCommand.SAVE_SCORE;
             serverCommand.setArgs(this.nameField.getText(), ScoreItem.timeFormatter.format(gameTime));
             controller.send(serverCommand);
-            new TryAgainDialog(getOwner(), controller);
+            new TryAgainDialog(getOwner());
             dispose();
         }
     }
 
     private void onCancel() {
-        new TryAgainDialog(getOwner(), controller);
+        new TryAgainDialog(getOwner());
         dispose();
     }
 

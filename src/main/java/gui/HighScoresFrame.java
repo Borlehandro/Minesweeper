@@ -69,7 +69,7 @@ public class HighScoresFrame extends JFrame {
             }).collect(Collectors.toCollection(Vector::new));
             Vector<String> header = new Vector<>();
             Collections.addAll(header, "Name", "Note date", "Result");
-            System.err.println(data);
+            // System.err.println(data);
             scoreTable = new JTable(data, header);
         } catch (IOException e) {
             System.err.println(e.getMessage());

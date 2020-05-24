@@ -34,23 +34,33 @@ public class GameController {
 
             mode = consoleReader.readLine();
 
-            if(mode == null)
+            if (mode == null) {
+                consoleReader.close();
                 break;
+            }
 
             switch (CommandParser.parse(mode.toLowerCase())) {
                 case CONSOLE -> {
-                    ConsoleController controller = new ConsoleController(consoleReader, serverController);
+                    ConsoleController controller = new ConsoleController(consoleReader);
                     controller.start();
                 }
                 case UI -> {
                     System.out.println("Try to launch Minesweeper in UI mode...");
-                    new MainMenu(serverController);
+                    new MainMenu();
                 }
                 case HELP -> System.out.println(serverController.send(ServerCommand.MENU_HELP));
                 case ABOUT -> System.out.println(serverController.send(ServerCommand.ABOUT));
-                case EXIT -> {break loop;}
+                case EXIT -> {
+                    serverController.send(ServerCommand.CLOSE);
+                    break loop;
+                }
                 default -> System.out.println("Unknown command");
             }
         } while (true);
+
+        serverController.close();
+        consoleReader.close();
+
+        System.exit(0);
     }
 }

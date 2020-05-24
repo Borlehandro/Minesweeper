@@ -1,7 +1,6 @@
 package server_api;
 
 import api.ServerCommand;
-import model.ExternalCell;
 
 import java.io.*;
 import java.net.Socket;
@@ -45,5 +44,11 @@ public class ServerController {
         socketWriter.println();
         socketWriter.flush();
         return objectInput.readObject();
+    }
+
+    public void close() throws IOException {
+        socket.shutdownInput();
+        socket.shutdownOutput();
+        socket.close();
     }
 }
