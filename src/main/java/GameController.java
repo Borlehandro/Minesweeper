@@ -9,7 +9,6 @@ import java.io.*;
 
 /**
  * Optimized for working with server
- * Todo Add local and server modes choice
  */
 public class GameController {
 
@@ -21,20 +20,22 @@ public class GameController {
         serverController = new ServerController();
     }
 
-    public void run() throws IOException, ClassNotFoundException {
+    public void run() throws IOException {
 
         System.out.println("Welcome to Minesweeper!\n" +
                 "Choose console or ui game mode or type \"help\" to get more information.");
 
         String mode;
-        MainMenu test = null;
 
         loop:
-        while ((mode = consoleReader.readLine()) != null) {
+        do {
 
-            // Todo fix ui exit
-            if(test!=null && !test.isVisible())
-                System.err.println("TURNED OFF!");
+            System.out.print("Start menu: ");
+
+            mode = consoleReader.readLine();
+
+            if(mode == null)
+                break;
 
             switch (CommandParser.parse(mode.toLowerCase())) {
                 case CONSOLE -> {
@@ -43,13 +44,13 @@ public class GameController {
                 }
                 case UI -> {
                     System.out.println("Try to launch Minesweeper in UI mode...");
-                    test = new MainMenu(serverController);
+                    new MainMenu(serverController);
                 }
                 case HELP -> System.out.println(serverController.send(ServerCommand.MENU_HELP));
                 case ABOUT -> System.out.println(serverController.send(ServerCommand.ABOUT));
                 case EXIT -> {break loop;}
                 default -> System.out.println("Unknown command");
             }
-        }
+        } while (true);
     }
 }

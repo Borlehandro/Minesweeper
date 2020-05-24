@@ -47,7 +47,7 @@ public class TryAgainDialog extends JDialog {
 
     private void onCancel() {
         getOwner().dispose();
-        new MainMenu();
+        new MainMenu(controller);
         dispose();
     }
 

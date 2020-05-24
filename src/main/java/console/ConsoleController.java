@@ -4,7 +4,6 @@ import api.ServerCommand;
 import model.ExternalCell;
 import model.Pair;
 import score.ScoreItem;
-import score.ScoreManager;
 import serialization.Serializer;
 import server_api.ServerController;
 
@@ -19,22 +18,28 @@ import java.util.TreeSet;
 public class ConsoleController {
 
     private final BufferedReader consoleReader;
-    // private final ScoreManager scoreManager;
 
     private final ServerController serverController;
 
-    public ConsoleController(BufferedReader consoleReader, ServerController serverController) throws IOException {
+    public ConsoleController(BufferedReader consoleReader, ServerController serverController) {
         this.consoleReader = consoleReader;
         this.serverController = serverController;
-        // scoreManager = new ScoreManager();
     }
 
-    public void start() throws IOException, ClassNotFoundException {
+    public void start() throws IOException {
 
         System.out.println("Welcome to console mode! Type \"help\" to get more information.");
 
         String s;
-        while ((s = consoleReader.readLine()) != null) {
+        do {
+
+            System.out.print("Console: ");
+
+            s = consoleReader.readLine();
+
+            if(s == null)
+                break;
+
             Command command = CommandParser.parse(s);
             switch (command) {
                 case HELP:
@@ -50,12 +55,11 @@ public class ConsoleController {
                     if (numberMines <= size * size - 1) {
                         try {
                             run(size, numberMines);
-                        } catch (IOException | ClassNotFoundException e) {
+                        } catch (IOException e) {
                             e.printStackTrace();
                             System.out.println("Can't run the game!");
                             continue;
                         }
-                        System.out.println("Welcome to console mode! Type \"help\" to get more information.");
                     } else System.out.println("Wrong field parameters.");
                 }
                 break;
@@ -65,8 +69,6 @@ public class ConsoleController {
                 case HIGH_SCORES: {
 
                     TreeSet<ScoreItem> scoreTable = Serializer.jsonToScoreTable(serverController.send(ServerCommand.HIGH_SCORE));
-
-                    // scoreManager.getScoreTable();
 
                     if (!scoreTable.isEmpty()) {
                         System.out.println("Score table.\n");
@@ -80,10 +82,10 @@ public class ConsoleController {
                 default:
                     System.out.println("Unknown command");
             }
-        }
+        } while (true);
     }
 
-    private void run(int size, int numberMines) throws IOException, ClassNotFoundException {
+    private void run(int size, int numberMines) throws IOException {
 
         ServerCommand serverCommand = ServerCommand.NEW_GAME;
         serverCommand.setArgs(String.valueOf(size), String.valueOf(numberMines));
@@ -102,14 +104,13 @@ public class ConsoleController {
 
                 Command command = CommandParser.parse(line);
 
-                System.err.println(command);
+                // System.err.println(command);
 
                 if (command == Command.CHECK || command == Command.FLAG) {
                     String[] args = line.split(" ");
                     switch (command) {
                         case CHECK -> {
                             for (int i = 1; i < (args.length - 1); i += 2) {
-                                // Todo test
                                 ServerCommand checkCommand = ServerCommand.CHECK;
                                 checkCommand.setArgs(args[i], args[i + 1]);
                                 cells = Serializer.jsonToExternal(serverController.send(checkCommand));
@@ -146,13 +147,13 @@ public class ConsoleController {
             if (Boolean.parseBoolean(serverController.send(ServerCommand.IS_COMPLETED)))
                 break;
 
+            System.out.print("Game: ");
+
         } while ((line = consoleReader.readLine()) != null);
 
         if (failed)
-            System.out.println("FAIL!");
+            System.out.println("Game failed!");
         else {
-
-            // TODO Read from properties
 
             LocalTime duration = LocalTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis() - start), ZoneOffset.UTC);
 
@@ -161,7 +162,6 @@ public class ConsoleController {
 
             ScoreItem best = Serializer.jsonToScoreItem(serverController.send(ServerCommand.GET_TOP_USER)); // scoreManager.getBest();
 
-            // Todo fix
             if (best!=null)
                 System.out.println(best.getTime().compareTo(duration) <= 0 ?
                         "The best time is " + ScoreItem.timeFormatter.format(best.getTime())
@@ -173,14 +173,11 @@ public class ConsoleController {
             ServerCommand scoreCommand = ServerCommand.SAVE_SCORE;
             scoreCommand.setArgs(name, ScoreItem.timeFormatter.format(duration));
             serverController.send(scoreCommand);
-
-            // scoreManager.add(name, duration);
         }
     }
 
     private void showField(ExternalCell[][] externalCells) throws IOException {
 
-        // Todo to json
         Pair<Integer> marks = Serializer.jsonToPair(serverController.send(ServerCommand.GET_MARKS));
 
         System.out.println("Marks : " + marks.x + "/" + marks.y);

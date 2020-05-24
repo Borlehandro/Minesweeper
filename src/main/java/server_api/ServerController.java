@@ -29,11 +29,11 @@ public class ServerController {
         socketWriter.flush();
         StringBuilder builder = new StringBuilder();
 
-        System.err.println("Waiting for response");
+        // System.err.println("Waiting for response");
 
         String line = objectInput.readUTF();
         builder.append(line);
-        System.err.println(line);
+        // System.err.println(line);
         return builder.toString();
     }
 
@@ -44,17 +44,6 @@ public class ServerController {
             command.getArgs().forEach(item -> socketWriter.print(" " + item));
         socketWriter.println();
         socketWriter.flush();
-        Object res = objectInput.readObject();
-        if(res instanceof ExternalCell[][]) {
-            ExternalCell[][] cells = (ExternalCell[][]) res;
-            for (ExternalCell[] cell : cells) {
-                for (int j = 0; j < cells.length; ++j)
-                    System.err.print(cell[j].getSymbol() + " ");
-                System.err.println();
-            }
-        }
-        return res;
-
+        return objectInput.readObject();
     }
-
 }

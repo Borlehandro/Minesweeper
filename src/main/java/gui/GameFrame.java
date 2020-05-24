@@ -2,7 +2,6 @@ package gui;
 
 import api.ServerCommand;
 import model.ExternalCell;
-import model.Field;
 import model.Pair;
 import score.ScoreItem;
 import serialization.Serializer;
@@ -27,7 +26,7 @@ public class GameFrame extends JFrame {
     private JLabel marksLabel;
 
     public GameFrame(ServerController controller, int size, int mines) throws IOException {
-
+        ExternalCell.loadImages();
         $$$setupUI$$$();
         setVisible(true);
         serverController = controller;
@@ -41,7 +40,7 @@ public class GameFrame extends JFrame {
 
         int MINIMUM_SIZE = (int) (((FieldPanel) fieldPanel).MINIMUM_CELL_SIZE * (1.1d * size + 0.1d));
 
-        System.err.println(MINIMUM_SIZE);
+        // System.err.println(MINIMUM_SIZE);
 
         setMinimumSize(new Dimension(MINIMUM_SIZE, MINIMUM_SIZE));
 
@@ -60,12 +59,11 @@ public class GameFrame extends JFrame {
                         1 : (int) (((FieldPanel) fieldPanel).CELL_SIZE * 0.1d);
                 ((FieldPanel) fieldPanel).FONT_SIZE = ((FieldPanel) fieldPanel).CELL_SIZE / 2;
 
-                System.err.println("NEW SIZE : " + getSize().getHeight() + ";" + getSize().getWidth());
+                // System.err.println("NEW SIZE : " + getSize().getHeight() + ";" + getSize().getWidth());
             }
         });
         Pair<Integer> marks = Serializer.jsonToPair(serverController.send(ServerCommand.GET_MARKS));
         marksLabel.setText(marks.x + "/" + marks.y);
-        // marksLabel.setText(0 + "/" + field.getMarksLimit());
     }
 
     /**
@@ -120,25 +118,6 @@ public class GameFrame extends JFrame {
         @Override
         protected void paintComponent(Graphics g) {
 
-//            try {
-//                cells = Serializer.jsonToExternal(serverController.send(ServerCommand.SHOW_FIELD));
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-
-            System.err.println("REPAINT!");
-
-            // Debug
-//            Cell[][] test = field.getCells();
-//            for (Cell[] item : test) {
-//                for (int j = 0; j < cells.length; j++) {
-//                    System.out.print(item[j] + " ");
-//                }
-//                System.out.println();
-//            }
-
-            System.err.println("LastClick : " + lastClickX + " ; " + lastClickY);
-
             loop:
             for (int i = 0; i < cells.length; i++)
                 for (int j = 0; j < cells.length; j++) {
@@ -146,8 +125,6 @@ public class GameFrame extends JFrame {
                     if (lastClickY >= i * CELL_SIZE + SPACING && lastClickY <= CELL_SIZE * (i + 1) - SPACING
                             && lastClickX >= j * CELL_SIZE + SPACING && lastClickX <= CELL_SIZE * (j + 1) - SPACING) {
                         try {
-
-                            System.err.println("Click on : " + i + " " + j);
 
                             if (lastButtonClicked == MouseEvent.BUTTON1
                                     && success
@@ -164,8 +141,8 @@ public class GameFrame extends JFrame {
                                     checkCommand.setArgs(String.valueOf(i), String.valueOf(j));
                                     cells = Serializer.jsonToExternal(serverController.send(checkCommand));
                                     if (cells.length == 0) {
-                                        System.err.println(ScoreItem.timeFormatter.format(LocalTime.ofInstant(
-                                                Instant.ofEpochMilli(gameTimeMillis), ZoneOffset.UTC)));
+//                                        System.err.println(ScoreItem.timeFormatter.format(LocalTime.ofInstant(
+//                                                Instant.ofEpochMilli(gameTimeMillis), ZoneOffset.UTC)));
                                         success = false;
                                         cells = Serializer.jsonToExternal(serverController.send(ServerCommand.SHOW_FIELD));
                                     }
@@ -177,7 +154,7 @@ public class GameFrame extends JFrame {
                                 cells = Serializer.jsonToExternal(serverController.send(flagCommand));
                                 Pair<Integer> marks = Serializer.jsonToPair(serverController.send(ServerCommand.GET_MARKS));
                                 marksLabel.setText(marks.x + "/" + marks.y);
-                            } else System.err.println(lastButtonClicked);
+                            }
 
                             i = -1;
                             lastClickX = -1;
@@ -238,8 +215,6 @@ public class GameFrame extends JFrame {
 
         @Override
         public void mouseClicked(MouseEvent e) {
-
-            System.err.println("Clicked : " + e.getX() + ";" + e.getY());
 
             ((FieldPanel) fieldPanel).lastClickX = e.getX();
             ((FieldPanel) fieldPanel).lastClickY = e.getY();

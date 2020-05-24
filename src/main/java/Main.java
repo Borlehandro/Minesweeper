@@ -5,7 +5,7 @@ public class Main {
         try {
             GameController game = new GameController();
             game.run();
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

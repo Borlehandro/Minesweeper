@@ -1,12 +1,15 @@
 import gui.GameFrame;
 import gui.HighScoresFrame;
 import gui.MainMenu;
+import server_api.ServerController;
+
+import java.io.IOException;
 
 public class UiTest {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         // new HighScoresFrame();
-        MainMenu menu = new MainMenu();
+        new MainMenu(new ServerController());
         // GameFrame game = new GameFrame(5, 1);
         //new FieldParamsDialog();
     }

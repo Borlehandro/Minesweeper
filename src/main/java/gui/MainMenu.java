@@ -17,11 +17,8 @@ public class MainMenu extends JFrame {
     private ServerController serverController;
 
     public MainMenu(ServerController controller) {
-        this();
+        
         serverController = controller;
-    }
-
-    public MainMenu() {
 
         newGameButton.addMouseListener(new ButtonMouseListener(newGameButton));
         scoreButton.addMouseListener(new ButtonMouseListener(scoreButton));
