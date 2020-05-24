@@ -42,13 +42,9 @@ public class ConsoleController {
 
             Command command = CommandParser.parse(s);
             switch (command) {
-                case HELP:
-                    System.out.println(serverController.send(ServerCommand.CONSOLE_HELP));
-                    break;
-                case ABOUT:
-                    System.out.println(serverController.send(ServerCommand.ABOUT));
-                    break;
-                case NEW_GAME: {
+                case HELP -> System.out.println(serverController.send(ServerCommand.CONSOLE_HELP));
+                case ABOUT -> System.out.println(serverController.send(ServerCommand.ABOUT));
+                case NEW_GAME -> {
                     String[] args = s.split(" ");
                     int size = Integer.parseInt(args[2]);
                     int numberMines = Integer.parseInt(args[3]);
@@ -58,17 +54,14 @@ public class ConsoleController {
                         } catch (IOException e) {
                             e.printStackTrace();
                             System.out.println("Can't run the game!");
-                            continue;
                         }
                     } else System.out.println("Wrong field parameters.");
                 }
-                break;
-                case EXIT: {
+                case EXIT -> {
                     serverController.close();
                     return;
                 }
-
-                case HIGH_SCORES: {
+                case HIGH_SCORES -> {
 
                     TreeSet<ScoreItem> scoreTable = Serializer.jsonToScoreTable(serverController.send(ServerCommand.HIGH_SCORE));
 
@@ -79,10 +72,7 @@ public class ConsoleController {
                     } else System.out.println("Score table not found. You can be the first player!");
 
                 }
-                break;
-
-                default:
-                    System.out.println("Unknown command");
+                default -> System.out.println("Unknown command");
             }
         } while (true);
     }
@@ -187,19 +177,27 @@ public class ConsoleController {
         Character[][] cells = Arrays.stream(externalCells).map(item -> Arrays.stream(item).map(ExternalCell::getSymbol).toArray(Character[]::new)).toArray(Character[][]::new);
 
         System.out.print("  ");
+        if(externalCells.length > 10)
+            System.out.print(" ");
+
         for (int j = 0; j < cells.length; ++j) {
             System.out.print("|" + j);
+            if(cells.length > 10 && j < 10)
+                System.out.print("|");
         }
         System.out.println("|");
 
         for (int i = 0; i < cells.length; ++i) {
             System.out.print("|" + i + "|");
+            if(cells.length > 10 && i < 10)
+                System.out.print(" ");
             for (int j = 0; j < cells.length; ++j) {
                 System.out.print(cells[i][j] + " ");
+                if(cells.length > 10)
+                    System.out.print(" ");
             }
             System.out.println("\b|");
         }
-
-        System.out.println("--------------------");
+        System.out.println();
     }
 }
