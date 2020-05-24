@@ -14,7 +14,7 @@ public class ServerController {
 
     public ServerController() throws IOException {
         Properties properties = new Properties();
-        properties.load(new FileReader("src\\main\\resources\\config.properties"));
+        properties.load(ServerController.class.getClassLoader().getResourceAsStream("config.properties"));
         socket = new Socket(properties.getProperty("server_url"), Integer.parseInt(properties.getProperty("server_port")));
         socketWriter = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()));
         objectInput = new ObjectInputStream(socket.getInputStream());
@@ -27,12 +27,8 @@ public class ServerController {
         socketWriter.println();
         socketWriter.flush();
         StringBuilder builder = new StringBuilder();
-
-        // System.err.println("Waiting for response");
-
         String line = objectInput.readUTF();
         builder.append(line);
-        // System.err.println(line);
         return builder.toString();
     }
 

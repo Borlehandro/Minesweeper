@@ -1,9 +1,7 @@
 package gui;
 
 import api.ServerCommand;
-import exceptions.NoResourceInitException;
 import score.ScoreItem;
-import score.ScoreManager;
 import serialization.Serializer;
 import server_api.ServerController;
 

@@ -13,7 +13,7 @@ import java.io.*;
 public class GameController {
 
     private final BufferedReader consoleReader;
-    private ServerController serverController;
+    private final ServerController serverController;
 
     public GameController() throws IOException {
         consoleReader = new BufferedReader(new InputStreamReader(System.in));

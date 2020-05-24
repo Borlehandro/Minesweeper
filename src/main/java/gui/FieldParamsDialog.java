@@ -1,7 +1,5 @@
 package gui;
 
-import server_api.ServerController;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -13,8 +11,8 @@ public class FieldParamsDialog extends JDialog {
     private JButton buttonCancel;
     private JTextField sizeField;
     private JTextField numberMinesField;
-    private JLabel sizeLable;
-    private JLabel numberMinesLable;
+    private JLabel sizeLabel;
+    private JLabel numberMinesLabel;
 
     public FieldParamsDialog(Window owner) {
         super(owner);
@@ -26,10 +24,19 @@ public class FieldParamsDialog extends JDialog {
     }
 
     private void init() {
+
         setContentPane(contentPane);
         setSize(300, 150);
         setResizable(false);
         setVisible(true);
+
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                onCancel();
+            }
+        });
+
         getRootPane().setDefaultButton(buttonOK);
 
         buttonOK.addMouseListener(new ButtonMouseListener(buttonOK));
@@ -44,14 +51,6 @@ public class FieldParamsDialog extends JDialog {
         });
 
         buttonCancel.addActionListener(e -> onCancel());
-
-        // call onCancel() when cross is clicked
-        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                onCancel();
-            }
-        });
     }
 
     private void onOK() throws IOException {
@@ -100,12 +99,12 @@ public class FieldParamsDialog extends JDialog {
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(2, 2, new Insets(0, 0, 0, 0), -1, -1));
         contentPane.add(panel3, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        sizeLable = new JLabel();
-        sizeLable.setText("Size");
-        panel3.add(sizeLable, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        numberMinesLable = new JLabel();
-        numberMinesLable.setText("Number mines");
-        panel3.add(numberMinesLable, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        sizeLabel = new JLabel();
+        sizeLabel.setText("Size");
+        panel3.add(sizeLabel, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        numberMinesLabel = new JLabel();
+        numberMinesLabel.setText("Number mines");
+        panel3.add(numberMinesLabel, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         numberMinesField = new JTextField();
         panel3.add(numberMinesField, new com.intellij.uiDesigner.core.GridConstraints(1, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         sizeField = new JTextField();

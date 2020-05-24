@@ -1,10 +1,9 @@
 package gui;
 
-import server_api.ServerController;
-
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 
 public class TryAgainDialog extends JDialog {

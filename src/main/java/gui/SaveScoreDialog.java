@@ -1,20 +1,15 @@
 package gui;
 
 import api.ServerCommand;
-import exceptions.NoResourceInitException;
-import score.Parser;
 import score.ScoreItem;
-import score.ScoreManager;
-import score.Writer;
 import server_api.ServerController;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.TreeSet;
 
 public class SaveScoreDialog extends JDialog {
 

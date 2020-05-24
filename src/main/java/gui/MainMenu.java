@@ -16,7 +16,7 @@ public class MainMenu extends JFrame {
     private JButton aboutButton;
     private JPanel menuPane;
 
-    private ServerController serverController;
+    private final ServerController serverController;
 
     public MainMenu() throws IOException {
 

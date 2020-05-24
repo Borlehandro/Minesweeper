@@ -18,7 +18,7 @@ public class GameFrame extends JFrame {
     private long gameTimeMillis;
     private Timer gameTimer;
     private ExternalCell[][] cells;
-    private ServerController serverController;
+    private final ServerController serverController;
 
     private JPanel gamePanel;
     private JPanel fieldPanel;
@@ -191,7 +191,6 @@ public class GameFrame extends JFrame {
                             && cells[i][j] != ExternalCell.WRONG_MARK) {
                         g.setColor(Color.black);
 
-                        // Todo fix font and x,y
                         g.setFont(new Font("Comics", Font.PLAIN, FONT_SIZE));
                         g.drawString(Character.toString(cells[i][j].getSymbol()),
                                 j * CELL_SIZE + SPACING + (CELL_SIZE - 2 * SPACING) / 2 - FONT_SIZE / 3,

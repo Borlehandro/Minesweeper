@@ -1,7 +1,6 @@
 package console;
 
 public enum Command {
-
     UNKNOWN,
     CHECK,
     FLAG,
@@ -12,5 +11,4 @@ public enum Command {
     HIGH_SCORES,
     CONSOLE,
     UI;
-
 }
